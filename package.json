@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack --config webpackReact.config.js && webpack",
-    "deploy": "webpack --config webpackReact.config.js && webpack && forever stopall && forever start -e err.log dist/bundle.js",
-    "dev": "webpack --config webpackReact.config.js && webpack --watch"
+    "build": "webpack",
+    "deploy": "webpack && forever stopall && forever start -e err.log dist/bundle.js",
+    "dev": "webpack --watch"
   },
   "repository": {
     "type": "git",

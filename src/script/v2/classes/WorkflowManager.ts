@@ -505,9 +505,11 @@ export class WorkflowManager {
     }
 
     static getUserNode(userID: number): Observable<NodeResponseInterface[]> {
-        return Observable.fromPromise(NodeModel.find({
-            owner: userID
-        }))
+        return Observable.fromPromise(
+            NodeModel.find({
+                owner: userID
+            })
+        )
             .map(nodes => nodes.map(node => new BodyNode(node)))
             .flatMap(nodes => {
                 if (nodes.length === 0) {
@@ -525,11 +527,13 @@ export class WorkflowManager {
                     Observable.forkJoin(userNodes.map(node => node.getHeader()))
                 );
             })
-            .flatMap(nodes => {
-                return Observable.forkJoin(nodes[0].map(node => {
-                    return Observable.forkJoin(node.map(n => n.getOwnerDetail()))
-                })).map(o => ({ nodes, o }));
-            })
+            .flatMap(
+                nodes => {
+                    return Observable.forkJoin(nodes[0].map(node => {
+                        return Observable.forkJoin(node.map(n => n.getOwnerDetail()))
+                    })).map(o => ({ nodes, o }));
+                }
+            )
             .map(({ nodes, o }) => {
                 let bodyNodes = nodes[0];
                 let headerNodes = nodes[1];
@@ -560,13 +564,13 @@ export class WorkflowManager {
 
                     for (let j = 0; j < innerNodes.length; j++) {
                         let user = innerNodes[j].getOwner();
-                        if(tutorStack.indexOf(user) === -1) {
+                        if (tutorStack.indexOf(user) === -1) {
                             tutorStack.push(user);
                         }
                         responseNode.detail += "\n" + innerTutors[j].getNicknameEn() + " :: " + innerNodes[j].getStatus() + " # " + innerNodes[j].getTimestampString() + "\n";
                         try {
                             let subtitle = innerNodes[j].getSubtitle();
-                            if (subtitle){
+                            if (subtitle) {
                                 responseNode.subtitle = subtitle;
                             }
                         } catch (_) { }
@@ -597,7 +601,7 @@ export class WorkflowManager {
                     responseNode.childOwner = _.last(innerNodes).getOwner();
                     responseNode.childStatus = _.last(innerNodes).getStatus();
 
-                    if(_.last(innerNodes).getStatus() === Status.COMPLETE){
+                    if (_.last(innerNodes).getStatus() === Status.COMPLETE) {
                         responseNode.childOwner = tutorStack.pop();
                     }
                     response.push(responseNode);

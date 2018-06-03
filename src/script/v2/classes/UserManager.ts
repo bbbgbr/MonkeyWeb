@@ -1,9 +1,6 @@
 import * as mongoose from "mongoose";
 import { Document, Schema } from "mongoose";
 import { Observable } from "rx";
-import { Course, CourseManager } from "./CourseManager";
-import { Hybrid, HybridManager } from "./HybridManager";
-import { SKillManager, Skill } from "./SkillManager";
 
 interface UserInterface extends Document {
     _id: Number,
@@ -145,14 +142,6 @@ export class Student extends User<StudentInterface> {
 
     constructor(student: StudentInterface) {
         super(student);
-    }
-
-    getRegistrationQuarter(): Observable<[Course[], Hybrid[], Skill[]]> {
-        return Observable.zip(
-            CourseManager.findCourseContainStudent(this.getID()),
-            HybridManager.findHybridContainStudent(this.getID()),
-            SKillManager.findSkillContainStudent(this.getID())
-        );
     }
 
 }
