@@ -18,8 +18,8 @@ block head
             border-color: transparent!important;
         }
 block script
+    script(src="https://cdn.jsdelivr.net/npm/lodash@4.17.5/lodash.min.js")
     script(src="js/JsBarcode.code128.min.js" type="text/javascript")
-    //- script(src="js/FileSaver.min.js" type="text/javascript")
     script(src="js/custom-file-input.js")
     script(src="js/adminStudentProfile.min.js")
 block body
@@ -28,6 +28,8 @@ block body
     canvas#cheBarcode(hidden='true')
     canvas#engBarcode(hidden='true')
     img#tableTemplate(src="#" hidden='true')
+    img#smTableTemplate(src="images/summer.png" hidden='true')
+    img#smReceiptTemplate(src="images/summerReceiptTemplate.png" hidden='true')
     .container-fluid
         .row
             .col-12.col-md-9.col-xl-10
@@ -36,18 +38,21 @@ block body
                         form
                             .form-group
                                 label
-                                    span.fa.fa-lg.fa-th-large &nbsp;
+                                    span.fas.fa-fw.fa-lg.fa-th-large &nbsp;
                                     |Quarter
-                                select.form-control#quarterSelect
+                                select.custom-select#quarterSelect
                 .row
                     .col-12.col-md-5
                         .row
                             .col-12
-                                img.img-fluid.img-thumbnail#profileImg(src="images/noImage.svg")
+                                img.img-fluid.img-thumbnail#profileImg(src="images/nopic.png")
                         .row
                             .col-12#studentProfileContent
                     .col-12.col-md-7
-                        img.img-fluid.img-thumbnail.float-right#recieptImg(src="images/noImage.svg")
+                        img.img-fluid.img-thumbnail.float-right#recieptImg(src="images/nopic.png")
+                .row
+                    .col-12
+                        button.btn.btn-danger(onclick="removeAllTimeTable();") Clear table
                 .row
                     .col-12.collapse#mainTable
                         .table-responsive
@@ -55,10 +60,10 @@ block body
                                 thead.thead-dark
                                     tr
                                         th &nbsp;
-                                        th.text-center TUE
-                                        th.text-center THU
-                                        th.text-center SAT
-                                        th.text-center SUN
+                                        th.text-center(width='23%') TUE
+                                        th.text-center(width='23%') THU
+                                        th.text-center(width='23%') SAT
+                                        th.text-center(width='23%') SUN
                                 tbody
                                     tr
                                         th.text-center 8-10
@@ -95,9 +100,9 @@ block body
                             thead.thead-dark
                                 tr
                                     th &nbsp;
-                                    th.text-center 8-10
-                                    th.text-center 10-12
-                                    th.text-center 13-15
+                                    th.text-center(width='30%') 8-10
+                                    th.text-center(width='30%') 10-12
+                                    th.text-center(width='30%') 13-15
                             tbody
                                 tr
                                     th.text-center CR
@@ -105,31 +110,39 @@ block body
                                     +tdButt("selector btn110")
                                     +tdButt("selector btn113")
                 .row
-                    .dropdown.col-12.col-md-6
+                    .dropdown.col-6.col-md-3
                         button.col.btn.btn-outline-info.dropdown-toggle(type='button' data-toggle="dropdown") Download cover
                         .dropdown-menu
                             a#mathCoverDowload.dropdown-item.disabled(href="#") Math cover
                             a#phyCoverDowload.dropdown-item.disabled(href="#") Physic cover
                             a#cheCoverDowload.dropdown-item.disabled(href="#") Chemistry cover
                             a#engCoverDowload.dropdown-item.disabled(href="#") English cover
+                            a#smMathCoverDowload.dropdown-item(href="#") Summer cover(Math)
+                            a#smPhyCoverDowload.dropdown-item(href="#") Summer cover(Physics)
                     .col-6.col-md-3
                         button.col.btn.btn-outline-info#commentViewButt(type='button') Comment
                     .col-6.col-md-3
-                        button.col.btn.btn-outline-info#addSubRegisStateButt(type='button') Description
+                        button.col.btn.btn-outline-info#absentViewButt(type='button') Absent
+                    .col-6.col-md-3
+                        button.col.btn.btn-outline-info#addChatBtn(type='button') Chat
                 .row
                     .col
                         canvas#mathCover(style="border:1px solid black" width="1654" height="1170" hidden='true')
                         canvas#phyCover(style="border:1px solid black" width="1654" height="1170" hidden='true')
                         canvas#cheCover(style="border:1px solid black" width="1654" height="1170" hidden='true')
                         canvas#engCover(style="border:1px solid black" width="1654" height="1170" hidden='true')
+                        canvas#smCover(style="border:1px solid black" width="1241" height="880" hidden='true')
                         canvas#appRejCover1(style="border:1px solid black" width="1654" height="1170" hidden='true')
                         canvas#appRejCover2(style="border:1px solid black" width="1654" height="1170" hidden='true')
+                        canvas#smAppRejCover(style="border:1px solid black" width="1241" height="880" hidden='true')
             .col-12.offset-md-9.col-md-3.offset-xl-10.col-xl-2.p-0#statusSidebar
                 .dropdown
                     button.col-12.btn.dropdown-toggle#statusButton(type="button" data-toggle="dropdown") STATUS
                     .dropdown-menu#statusDropdown
                 hr
                 #statusSubButton
+                hr
+                #chatButt
         //- Modal for add subj
         #addSubjModal.modal.fade
             .modal-dialog
@@ -144,19 +157,19 @@ block body
                     .modal-footer
                         button.btn.btn-success#addSubjButt(type="button") Add
                         button.btn.btn-danger(type="button" data-dismiss="modal") Cancel
-        //- Modal for add sub state
-        #addSubStateModal.modal.fade
+        //- Modal for add chat
+        #addChatModal.modal.fade
             .modal-dialog
                 .modal-content
                     .modal-header
-                        h4.modal-title Add state description
+                        h4.modal-title Add chat
                         button.close(type="button" data-dismiss="modal") &times;
                     .modal-body
                         .form-group
                             label.sr-only &nbsp;
-                            input.form-control#subState(type="text")
+                            input.form-control#chatMsg(type="text")
                     .modal-footer
-                        button.btn.btn-success#addSubStateButt(type="button") Add
+                        button.btn.btn-success#addNewChatButt(type="button") Add
                         button.btn.btn-danger(type="button" data-dismiss="modal") Cancel
         //- Modal for Upload Pic
         #uploadPicModal.modal.fade
@@ -189,7 +202,7 @@ block body
                     .modal-body
                         .form-group
                             label(for="nicknameInput")
-                                span.fa.fa-user-o
+                                span.far.fa-fw.fa-lg.fa-user
                                 |Name
                             input.form-control#nicknameInput(type="text")
                             input.form-control#firstnameInput(type="text")
@@ -199,7 +212,7 @@ block body
                             input.form-control#lastnameEInput(type="text")
                         .form-group
                             label(for="gradeInput")
-                                span.fa.fa-graduation-cap
+                                span.fas.fa-fw.fa-lg.fa-graduation-cap
                                 |Grade
                             select.form-control#gradeInput
                                 option(value="1") P1
@@ -216,17 +229,17 @@ block body
                                 option(value="12") S6
                         .form-group
                             label(for="levelInput")
-                                span.fa.fa-level-up
+                                span.fas.fa-fw.fa-lg.fa-level-up-alt
                                 |Level
                             input.form-control#levelInput(type="text")
                         .form-group
                             label(for="emailInput")
-                                span.fa.fa-envelope-o
+                                span.far.fa-fw.fa-lg.fa-envelope
                                 |Email
                             input.form-control#emailInput(type="text")
                         .form-group
                             label(for="phoneInput")
-                                span.fa.fa-phone
+                                span.fas.fa-fw.fa-lg.fa-phone
                                 |Phone
                             input.form-control#phoneInput(type="text")
                             input.form-control#parentPhoneInput(type="text")
@@ -242,5 +255,32 @@ block body
                         button.close(type="button" data-dismiss="modal") &times;
                     .modal-body
                         #commentContentBody
+                    .modal-footer
+                        button.btn.btn-danger(type="button" data-dismiss="modal") Close
+        //- Modal for view student absent
+        #viewAbsentModal.modal.fade
+            .modal-dialog.modal-lg
+                .modal-content
+                    .modal-header
+                        h4.modal-title Student Absent
+                        button.close(type="button" data-dismiss="modal") &times;
+                    .modal-body
+                        .row
+                            .col-12
+                                h5 Absent Quota
+                            .col-6
+                                buttun#absentHistoryMQuota.col.btn.btn-outline-primary Math
+                            .col-6
+                                buttun#absentHistoryPQuota.col.btn.btn-outline-primary Phy
+                        hr
+                        .table-responsive
+                            table.table.table-bordered
+                                thead.thead-dark
+                                    tr
+                                        th.text-center Day
+                                        th.text-center Subject
+                                        th.text-center Reason
+                                        th.text-center Timestamp
+                                tbody#absentHistoryTableBody
                     .modal-footer
                         button.btn.btn-danger(type="button" data-dismiss="modal") Close

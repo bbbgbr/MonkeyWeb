@@ -1,45 +1,38 @@
-extends oldHtmlTemplate
+extends htmlTemplate
 block head
     -const pageTitle = "Admin Home"
-    link(href="css/component.css", rel="stylesheet")
-    script(src="js/admin.min.js")
+block script
     script(src="galleria/galleria-1.5.7.min.js")
-    script(type="text/javascript" src="js/home.min.js")
+    script(src="js/home.min.js")
+    script.
+        loadAdminHomeCarousel();
 block body
     .container-fluid
-        #slideShow(align="center")
-            .galleria
-        br
-        if(webUser.position!="tutor")
-            .col-sm-6
-                button.btn.btn-primary(onClick="uploadSlide()") UPLOAD SLIDE
-            .col-sm-6(align="right")
-                .btn-group
-                    button.btn.btn-info(type="button" onClick="portrait()") PORTRAIT
-                    button.btn.btn-info(type="button" onClick="landscape()") LANDSCAPE
-                    button.btn.btn-info(type="button" onClick="news()") NEWS
-                    button.btn.btn-info(type="button" onClick="full()") FULL-SCREEN
-        //- Modal for uploadPic
-        #uploadModal.modal.fade(role="dialog")
+        .row.pt-3
+            .col
+                .galleria
+        .row.pt-3
+            .col
+                button#uploadBtn.btn.btn-outline-primary Upload Slide
+                .btn-group.float-right(role='group')
+                    button#stdPtBtn.btn.btn-outline-info Student Portrait
+                    button#stdLcBtn.btn.btn-outline-info Student Landscape
+                    button#adminNwBtn.btn.btn-outline-info News
+        //- Modal for upload picture
+        #uploadModal.modal.fade
             .modal-dialog
                 .modal-content
                     .modal-header
-                        h4 Upload Slide
-                    .modal-body.form-group
-                        div(align="center")
-                            p p=portrait, l=landscape, n=news
-                        .box(align="center")
-                            input#file-1.inputfile.inputfile-1(
-                                type="file"
-                                name="file-1[]"
-                                style="opacity: 0;height: 0;"
-                                data-multiple-caption="{count} files selected" multiple
-                            )
-                            label(for="file-1")
-                                svg(xmlns="http://www.w3.org/2000/svg" width="20" height="17" viewBox="0 0 20 17")
-                                    path(d="M10 0l-5.2 4.9h3.3v5.1h3.8v-5.1h3.3l-5.2-4.9zm9.3 11.5l-3.2-2.1h-2l3.4 2.6h-3.5c-.1 0-.2.1-.2.1l-.8 2.3h-6l-.8-2.2c-.1-.1-.1-.2-.2-.2h-3.6l3.4-2.6h-2l-3.2 2.1c-.4.3-.7 1-.6 1.5l.6 3.1c.1.5.7.9 1.2.9h16.3c.6 0 1.1-.4 1.3-.9l.6-3.1c.1-.5-.2-1.2-.7-1.5z")
-                                span เลือกรูป
-                    .modal-footer
-                        button.btn.btn-primary(type="button" onClick="upNews()") ตกลง
-                        button.btn.btn-default(type="button" data-dismiss="modal") ยกเลิก
-        script(src="js/custom-file-input.js")
+                        h4.modal-title Upload slide
+                        button.close(type="button" data-dismiss="modal") &times;
+                    .modal-body
+                        .row
+                            label.col-12.text-danger.text-center Prefix for slide:
+                            label.col-12.text-center Student Portrait = p, Student Landscape = l, News = n
+                        .custom-file
+                            input#slideFile.custom-file-input(type="file" multiple)
+                            label#fileLabel.custom-file-label Please select file...
+                    .modal-footer   
+                        button#submitUploadBtn.btn.btn-success(type="button") Upload
+                        button.btn.btn-danger(type="button" data-dismiss="modal") Cancel
+

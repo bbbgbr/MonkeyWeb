@@ -1,17 +1,40 @@
-doctype html
 html(lang="en")
     head
         meta(charset="utf-8")
-        meta(name="viewport" content="width=device-width,initial-scale=1, maximum-scale=1, user-scalable=no")
+        meta(name="viewport" content="width=device-width,initial-scale=1, maximum-scale=1, shrink-to-fit=no")
         link(rel="stylesheet" href="https://fonts.googleapis.com/css?family=Athiti|Chonburi|Itim|Kanit|Maitree|Mitr|Oxygen|Pattaya|Pridi|Prompt|Sriracha|Taviraj|Trirong")
+        link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous")
+        link(rel="stylesheet", href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css")
+        link(rel="stylesheet" type="text/css" href="/css/style.min.css")
         link(rel="apple-touch-icon" sizes="57x57" href="/images/ios_icon57x57.png")
         link(rel="apple-touch-icon" sizes="72x72" href="/images/ios_icon72x72.png")
         link(rel="apple-touch-icon" sizes="114x114" href="/images/ios_icon114x114.png")
         link(rel="apple-touch-icon" sizes="144x144" href="/images/ios_icon144x144.png")
-        script(src="/js/jquery-3.2.1.min.js")
-        script(src="/js/socket.io.js" type="text/javascript")
-        script(scr="/js/test.js")
         block head
         title= pageTitle?pageTitle:"Monkey-Monkey Official Website"
     body
-        h1 Hello
+        h1 HelloWorld
+        input#txt(type="text")
+        .table-responsive
+                    table.table.table-hover
+                        thead
+                            tr
+                                th No.
+                                th ID
+                                th Grade
+                                th Nickname
+                                th Name
+                                //- th Surname
+                                th Level
+                                th Description
+                                //- th CR
+                                //- th HB
+                                th#checkTableColumm Check
+                        tbody#allStudentTable
+
+    script(src="/js/jquery-3.2.1.min.js")
+    script(src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous")
+    script(src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous")
+    script(src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.js")
+    script(src="/js/socket.io.js")
+    script(src="/js/test.js")

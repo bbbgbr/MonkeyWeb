@@ -1,32 +1,80 @@
 const studentLevel = ["P1", "P2", "P3", "P4", "P5", "P6", "S1", "S2", "S3", "S4", "S5", "S6"];
 function dateToDay(date) {
-    switch (date) {
-        case 176400000:
-            return "sat8";
-            break;
-        case 183600000:
-            return "sat10";
-            break;
-        case 194400000:
-            return "sat13";
-            break;
-        case 201600000:
-            return "sat15";
-            break;
-        case 262800000:
-            return "sun8";
-            break;
-        case 270000000:
-            return "sun10";
-            break;
-        case 280800000:
-            return "sun13";
-            break;
-        case 288000000:
-            return "sun15";
-            break;
+    if (quarter < 10) {
+        switch (date) {
+            case 176400000:
+                return "sat8";
+                break;
+            case 183600000:
+                return "sat10";
+                break;
+            case 194400000:
+                return "sat13";
+                break;
+            case 201600000:
+                return "sat15";
+                break;
+            case 262800000:
+                return "sun8";
+                break;
+            case 270000000:
+                return "sun10";
+                break;
+            case 280800000:
+                return "sun13";
+                break;
+            case 288000000:
+                return "sun15";
+                break;
+        }
+    } else {
+        let t = moment(date);
+        switch (t.hour()) {
+            case 8:
+                return "sat8";
+                break
+            case 10:
+                return "sat10";
+                break
+            case 13:
+                return "sat13";
+                break
+        }
     }
 }
+let year;
+let quarter;
+getQuarter();
+async function getQuarter() {
+    let [allQ, config] = await Promise.all([
+        listQuarter('private'),
+        getConfig()
+    ]);
+    for (let i in allQ.quarter) {
+        $("#quarter").append(
+            "<option value='" + allQ.quarter[i].year + '-' + allQ.quarter[i].quarter + "'>" + allQ.quarter[i].name + "</option>"
+        );
+    }
+    let cookies = getCookieDict();
+    if (cookies.monkeyWebSelectedQuarter === undefined) {
+        $("#quarter").val(config.defaultQuarter.registration.year + '-' + config.defaultQuarter.registration.quarter);
+        writeCookie("monkeyWebSelectedQuarter", $("#quarter").val());
+        year = config.defaultQuarter.registration.year;
+        quarter = config.defaultQuarter.registration.quarter;
+    } else {
+        $("#quarter").val(cookies.monkeyWebSelectedQuarter);
+        let str = $("#quarter").val();
+        year = str.slice(0, 4);
+        quarter = str.slice(5);
+    }
+}
+$("#quarter").change(function () {
+    writeCookie("monkeyWebSelectedQuarter", $("#quarter").val());
+    let str = $("#quarter").val();
+    year = str.slice(0, 4);
+    quarter = str.slice(5);
+    sendLevel();
+});
 function sendLevel() {
     let allLevel = [];
     $('#level').find(':checked').each(function () {

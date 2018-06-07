@@ -13,27 +13,27 @@ block body
                 form
                     .form-group
                         label
-                            span.fa.fa-lg.fa-th-large &nbsp;
+                            span.fas.fa-fw.fa-lg.fa-th-large &nbsp;
                             |Quarter
-                        select.form-control#quarter(onChange="quarterChange()")
+                        select.custom-select#quarter(onChange="quarterChange()")
                 form
-                    .form-group
+                    .form-group.mb-0
                         label
-                            span.fa.fa-lg.fa-filter &nbsp;
+                            span.fas.fa-fw.fa-lg.fa-filter &nbsp;
                             |Filter
-                        select.form-control#status(onChange="getAllStudentContent()" style="margin-bottom: 5px")
-                            option(value="default") Default
-                            option(value="active") Active
-                            option(value="inactive") Inactive
-                            option(value="dropped") Drop
-                            option(value="terminated") Terminate
+                        select.custom-select#status(onChange="getAllStudentContent()")
+                            option(value="default") Default(Active/Drop)
+                            option(value="active") Active(Current register)
+                            option(value="dropped") Drop(ใน Q นี้,รอคืนเงิน)
+                            option(value="terminated") Terminate(ล้างตาราง,คืนเงินแล้ว)
+                            option(value="inactive") New student ID
                             option(value="all") All
                 form
-                    .form-group
-                        select.form-control#stage(onChange="registrationStateChange()")
+                    .form-group.mb-0
+                        select.custom-select#stage(onChange="registrationStateChange()")
                 form
-                    .form-group
-                        select.form-control#grade(onChange="getAllStudentContent()")
+                    .form-group.mb-0
+                        select.custom-select#grade(onChange="getAllStudentContent()")
                             option(value="all") All Grade
                             option(value="1") P1
                             option(value="2") P2
@@ -49,24 +49,27 @@ block body
                             option(value="12") S6
                 form
                     .form-group
-                        select.form-control#course(onChange="getAllStudentContent()")
-                            option(value="all" ) CR &amp; FHB
+                        select.custom-select#course(onChange="getAllStudentContent()")
+                            option(value="none" ) CR or FHB
                             option(value="cr") CR
                             option(value="hb") FHB
+                            option(value="all" ) CR &amp; FHB
                 form
                     .form-group
                         label
-                            span.fa.fa-lg.fa-search &nbsp;
+                            span.fas.fa-fw.fa-lg.fa-search &nbsp;
                             |Find student
                         input.typeahead.form-control(type="text" data-provide='typeahead')
                 form(onsubmit="scanStudentBarcode(); return false;")
                     .form-group
                         label
-                            span.fa.fa-lg.fa-barcode
+                            span.fas.fa-fw.fa-lg.fa-barcode
                             |Barcode
                         input.form-control(type="number" id="studentID" autofocus)
                 label#currentStudentLabel 
-                button.btn.btn-outline-secondary.col-sm-12(onClick="createNewStudent()") Add Student
+                button.btn.btn-outline-secondary.col-12(onClick="if(confirm('ยืนยันที่จะเพิ่มนักเรียนใหม่?'))createNewStudent()") Add Student
+                h1#stdCount.text-center.text-danger.mb-0 --
+                p.text-center.text-danger people
             .col-12.col-md-9.offset-md-3.col-xl-10.offset-xl-2.p-0
                 .table-responsive
                     table.table.table-hover
@@ -77,11 +80,8 @@ block body
                                 th Grade
                                 th Nickname
                                 th Name
-                                //- th Surname
                                 th Level
-                                th Description
-                                //- th CR
-                                //- th HB
+                                th Chat
                                 th#checkTableColumm Check
                         tbody#allStudentTable
         .modal.fade#newStudentDialog

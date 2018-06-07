@@ -11,6 +11,7 @@ genQuarterSelect();
 
 // add event when change quarter
 $("#quarterSelect").change(function () {
+    writeCookie("monkeyWebSelectedQuarter", this.value);
     loadRecieptImg();
     genStudentData();
 });
@@ -61,12 +62,12 @@ $("#commentViewButt").click(function () {
     $("#viewCommentModal").modal('show');
 });
 
-// add event when click addSubRegisStateButt
-$("#addSubRegisStateButt").click(function () {
-    $("#addSubStateModal").modal("show");
+// add event when click add chat
+$("#addChatBtn").click(function () {
+    $("#addChatModal").modal("show");
 });
-$("#addSubStateButt").click(function () {
-    changeSubState();
+$("#addNewChatButt").click(function () {
+    addNewChat();
 });
 
 // add event when click download butt
@@ -89,6 +90,12 @@ $("#engCoverDowload").click(function () {
     if (!($(this).hasClass('disabled'))) {
         genCover(3);
     }
+});
+$("#smMathCoverDowload").click(function () {
+    genSummerCover(1);
+});
+$("#smPhyCoverDowload").click(function () {
+    genSummerCover(2);
 });
 
 // load profileImg function
@@ -125,7 +132,7 @@ async function loadRecieptImg() {
                 $("#recieptImg").attr("src", path + ".jpeg");
             }).fail(() => {
                 log("can't find picture");
-                $("#recieptImg").attr("src", "images/noImage.svg");
+                $("#recieptImg").attr("src", "images/nopic.png");
             });
         });
     });
@@ -140,16 +147,17 @@ async function genQuarterSelect() {
         );
     }
     let cookie = getCookieDict();
-    if (cookie.courseQuarter === undefined) {
+    if (cookie.monkeyWebSelectedQuarter === undefined) {
         let config = await getConfig();
         let str = config.defaultQuarter.quarter.year + "-" + config.defaultQuarter.quarter.quarter;
         $("#quarterSelect").val(str);
-        writeCookie("courseQuarter", str);
+        writeCookie("monkeyWebSelectedQuarter", str);
     } else {
-        $("#quarterSelect").val(cookie.courseQuarter);
+        $("#quarterSelect").val(cookie.monkeyWebSelectedQuarter);
     }
     genStudentData();
     loadRecieptImg();
+    showChatData();
 }
 
 // gen student info function
@@ -161,13 +169,26 @@ async function genStudentData() {
     $("#studentProfileContent").append(
         "<h4>" + studentData.firstname + " (" + studentData.nickname + ") " + studentData.lastname + "</h4>" +
         "<h4>" + studentData.firstnameEn + " (" + studentData.nicknameEn + ") " + studentData.lastnameEn + "</h4>" +
-        "<h4><span class='fa fa-graduation-cap'></span> " + (studentData.grade > 6 ? 'S' + (studentData.grade - 6) : 'P' + studentData.grade) +
-        " <span class='fa fa-id-card-o'></span> " + ID + "</h4>" +
+        "<h4><span class='fas fa-fw fa-lg fa-graduation-cap'></span> " + (studentData.grade > 6 ? 'S' + (studentData.grade - 6) : 'P' + studentData.grade) +
+        " <span class='far fa-fw fa-lg fa-id-card'></span> " + ID + "</h4>" +
         "<h5>Level: " + studentData.level + "</h5>" +
-        "<h5><span class='fa fa-envelope-o'></span> " + studentData.email + "</h5>" +
-        "<h5><span class='fa fa-phone'></span> Student: " + studentData.phone + "</h5>" +
-        "<h5><span class='fa fa-phone'></span> Parent: " + studentData.phoneParent + "</h5>"
+        "<h5><span class='far fa-fw fa-lg fa-envelope'></span> " + studentData.email + "</h5>" +
+        "<h5><span class='fas fa-fw fa-lg fa-phone'></span> Student: " + studentData.phone + "</h5>" +
+        "<h5><span class='fas fa-fw fa-lg fa-phone'></span> Parent: " + studentData.phoneParent + "</h5>"
     );
+    if (parseInt(str.slice(5)) > 10) {
+        $("#smCoverDowload").show();
+        $("#mathCoverDowload").hide();
+        $("#phyCoverDowload").hide();
+        $("#cheCoverDowload").hide();
+        $("#engCoverDowload").hide();
+    } else {
+        $("#smCoverDowload").hide();
+        $("#mathCoverDowload").show();
+        $("#phyCoverDowload").show();
+        $("#cheCoverDowload").show();
+        $("#engCoverDowload").show();
+    }
     genStatusPanel(studentData.status, studentData.quarter);
     genStudentTable();
     genChangeInfoModal(studentData);
@@ -221,7 +242,6 @@ async function genStatusPanel(status, quarter) {
         "<a class='dropdown-item' onclick=\"changeStudentStatus(\'dropped\')\">DROP</a>"
         // "<a class='dropdown-item' onclick=\"changeStudentStatus(\'terminated\')\">TERMINATE</a>"
     );
-    genSubRegisState();
     let str = cookie.courseQuarter;
     if (quarter != undefined) {
         let iden = true;
@@ -240,14 +260,6 @@ async function genStatusPanel(status, quarter) {
         genStatusPanel(status, quarter);
     }
 }
-async function genSubRegisState() {
-    let str = $("#quarterSelect").val();
-    let studentFullState = await $.post("post/v1/getRegistrationState", { studentID: ID, quarter: str.slice(5), year: str.slice(0, 4) });
-    if (studentFullState.subRegistrationState != undefined && studentFullState.subRegistrationState != "-") {
-        let oldHtml = $(".subButt-" + studentFullState.registrationState).html();
-        $(".subButt-" + studentFullState.registrationState).html(oldHtml + "<br>" + studentFullState.subRegistrationState + "</br>");
-    }
-}
 async function genStudentTable() {
     let fhbHasMath = false;
     let fhbHasPhy = false;
@@ -255,7 +267,7 @@ async function genStudentTable() {
     let fhbHasEng = false;
     let str = $("#quarterSelect").val();
     $(".selector").html("ADD SUBJ").removeClass("cr hb sk");
-    if (parseInt(str.slice(5)) > 4) {
+    if (parseInt(str.slice(5)) > 10) {
         $("#mainTable").collapse("hide");
         $("#summerTable").collapse("show");
     } else {
@@ -286,16 +298,29 @@ async function genStudentTable() {
             }
 
         }
-        if (timeTable.course[i].courseName.slice(0, 1) === "C") {
-            fhbHasChe = true;
-        }
+        // if (timeTable.course[i].courseName.slice(0, 1) === "C") {
+        //     fhbHasChe = true;
+        // }
     }
     for (let i in timeTable.hybrid) {
         let time = moment(timeTable.hybrid[i].day);
         $(".btn" + time.day() + time.hour()).html("FHB:" + timeTable.hybrid[i].subject).addClass("hb").attr("id", timeTable.hybrid[i].hybridID);
-        if (timeTable.hybrid[i].subject == "P") {
-            fhbHasPhy = true;
-        } else fhbHasMath = true;
+        switch (timeTable.hybrid[i].subject) {
+            case "M":
+                fhbHasMath = true;
+                break;
+            case "P":
+                fhbHasPhy = true;
+                break;
+            case "C":
+                fhbHasChe = true;
+                break;
+            case "E":
+                fhbHasEng = true;
+                break;
+            default:
+                break;
+        }
     }
     for (let i in timeTable.skill) {
         let time = moment(timeTable.skill[i].day);
@@ -350,30 +375,35 @@ async function genBarcode() {
 }
 async function genTableTemplate(hasMath, hasPhy, hasChe, hasEng) {
     let studentData = await studentProfile(ID);
+    let src = 'images/TableCover/';
     let state = (studentData.grade > 6) ? 'h' : 'j';
-    if (hasMath && hasPhy) {
-        $("#tableTemplate").attr("src", "images/mp" + state + ".png");
-    } else if (hasMath) {
-        $("#tableTemplate").attr("src", "images/m" + state + ".png");
-        // $("#phyCoverDownloadButt").addClass("disabled");
-    } else if (hasPhy) {
-        $("#tableTemplate").attr("src", "images/p" + state + ".png");
-        // $("#mathCoverDownloadButt").addClass("disabled");
-    } else {
-        $("#tableTemplate").attr("src", "images/mp" + state + ".png");
-    }
+    // if (hasMath && hasPhy) {
+    //     $("#tableTemplate").attr("src", "images/mp" + state + ".png");
+    // } else if (hasMath) {
+    //     $("#tableTemplate").attr("src", "images/m" + state + ".png");
+    // } else if (hasPhy) {
+    //     $("#tableTemplate").attr("src", "images/p" + state + ".png");
+    // } else {
+    //     $("#tableTemplate").attr("src", "images/mp" + state + ".png");
+    // }
     if (hasMath) {
+        src += 'm';
         $("#mathCoverDowload").removeClass("disabled");
     }
     if (hasPhy) {
+        src += 'p';
         $("#phyCoverDowload").removeClass("disabled");
     }
     if (hasChe) {
+        src += 'c';
         $("#cheCoverDowload").removeClass("disabled");
     }
     if (hasEng) {
+        src += 'e';
         $("#engCoverDowload").removeClass("disabled");
     }
+    src += state + '.png';
+    $("#tableTemplate").attr("src", src);
 }
 
 /**
@@ -382,7 +412,20 @@ async function genTableTemplate(hasMath, hasPhy, hasChe, hasEng) {
  */
 async function genCover(type) {
     let str = $("#quarterSelect").val();
-    let [profile, timeTable] = await Promise.all([studentProfile(ID), $.post("post/v1/studentTimeTable", { studentID: ID, year: str.slice(0, 4), quarter: str.slice(5) })]);
+    if ((type === 4 || type === 5) && parseInt(str.slice(5)) > 10) {
+        if (type === 4) {
+            genSmAppRej(1);
+        } else {
+            genSmAppRej(2);
+        }
+        return;
+    }
+    let [profile, timeTable, registedData, allQ] = await Promise.all([
+        studentProfile(ID),
+        $.post("post/v1/studentTimeTable", { studentID: ID, year: str.slice(0, 4), quarter: str.slice(5) }),
+        $.post('/v2/student/getRegistrationQuarter', { studentID: ID }),
+        listQuarter('private')
+    ]);
     let coverCanvas;
     let barcode;
     switch (type) {
@@ -403,7 +446,7 @@ async function genCover(type) {
             barcode = document.getElementById('engBarcode');
             break;
         default:
-            overCanvas = document.getElementById('mathCover');
+            coverCanvas = document.getElementById('mathCover');
             barcode = document.getElementById('mathBarcode');
             break;
     }
@@ -413,11 +456,11 @@ async function genCover(type) {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.font = "bold 150px Cordia New";
-    ctx.fillText((profile.grade > 6) ? 'S' + (profile.grade - 6) : 'P' + profile.grade, 112, 88);
+    ctx.fillText((profile.grade > 6) ? 'S' + (profile.grade - 6) : 'P' + profile.grade, 117, 85);
     let profileImg = document.getElementById('profileImg');
     let picH = 184;
     let picW = profileImg.width * picH / profileImg.height;
-    ctx.drawImage(profileImg, 200, 30, picW, picH);
+    ctx.drawImage(profileImg, 204, 30, picW, picH);
     ctx.font = "bold 80px Cordia New";
     switch (type) {
         case 0:
@@ -439,15 +482,15 @@ async function genCover(type) {
     ctx.drawImage(barcode, 900, 115);
     ctx.fillText(profile.firstname + " (" + profile.nickname + ")", 600, 80);
     ctx.fillText(profile.lastname, 600, 170);
-    let w = [1289, 1508, 811, 1050];
-    let h = [390, 533, 675, 813, 955];
+    let w = [1289, 1508, 835, 1064];
+    let h = [383, 508, 633, 758, 875];
     let mw = [1335, 1416, 1498, 1580];
     let mh = [140, 220, 300, 380, 460];
     ctx.font = "bold 60px Cordia New";
     ctx.fillStyle = "#f442df";
     for (let i in timeTable.course) {
         ctx.fillText("CR: " + timeTable.course[i].courseName, w[dayIndex(timeTable.course[i].day)], h[hourIndex(timeTable.course[i].day)]);
-        ctx.fillText((timeTable.course[i].tutorName == "Hybrid" ? "HB" : timeTable.course[i].tutorName), w[dayIndex(timeTable.course[i].day)], h[hourIndex(timeTable.course[i].day)] + 70);
+        ctx.fillText((timeTable.course[i].tutorName == "Hybrid" ? "HB" : timeTable.course[i].tutorName), w[dayIndex(timeTable.course[i].day)], h[hourIndex(timeTable.course[i].day)] + 60);
         if (timeTable.course[i].tutorName == "Hybrid") {
             if (type == 0 && timeTable.course[i].courseName.slice(0, 1) == "M") {
                 ctx.fillText("CR", mw[dayIndex(timeTable.course[i].day)], mh[hourIndex(timeTable.course[i].day)]);
@@ -463,11 +506,15 @@ async function genCover(type) {
     for (let i in timeTable.hybrid) {
         ctx.fillStyle = "#242de2";
         ctx.fillText("FHB: " + timeTable.hybrid[i].subject, w[dayIndex(timeTable.hybrid[i].day)], h[hourIndex(timeTable.hybrid[i].day)]);
-        ctx.fillText("HB", w[dayIndex(timeTable.hybrid[i].day)], h[hourIndex(timeTable.hybrid[i].day)] + 70);
+        ctx.fillText("HB", w[dayIndex(timeTable.hybrid[i].day)], h[hourIndex(timeTable.hybrid[i].day)] + 60);
         ctx.fillStyle = "black";
         if (type == 0 && timeTable.hybrid[i].subject == "M") {
             ctx.fillText("HB", mw[dayIndex(timeTable.hybrid[i].day)], mh[hourIndex(timeTable.hybrid[i].day)]);
         } else if (type == 1 && timeTable.hybrid[i].subject == "P") {
+            ctx.fillText("HB", mw[dayIndex(timeTable.hybrid[i].day)], mh[hourIndex(timeTable.hybrid[i].day)]);
+        } else if (type == 2 && timeTable.hybrid[i].subject == "C") {
+            ctx.fillText("HB", mw[dayIndex(timeTable.hybrid[i].day)], mh[hourIndex(timeTable.hybrid[i].day)]);
+        } else if (type == 3 && timeTable.hybrid[i].subject == "E") {
             ctx.fillText("HB", mw[dayIndex(timeTable.hybrid[i].day)], mh[hourIndex(timeTable.hybrid[i].day)]);
         }
     }
@@ -477,7 +524,7 @@ async function genCover(type) {
         let time = moment(timeTable.skill[i].day);
         if (timeTable.skill[i].subject == "ME") {
             ctx.fillText("SK: M " + time.format("H:00"), w[dayIndex(timeTable.skill[i].day)], h[hourIndex(timeTable.skill[i].day)]);
-            ctx.fillText("SK: E " + time.format("H:30"), w[dayIndex(timeTable.skill[i].day)], h[hourIndex(timeTable.skill[i].day)] + 70);
+            ctx.fillText("SK: E " + time.format("H:30"), w[dayIndex(timeTable.skill[i].day)], h[hourIndex(timeTable.skill[i].day)] + 60);
         } else {
             if (time.hour() == 9 || time.hour() == 11 || time.hour() == 14 || time.hour() == 16) {
                 ctx.fillText("SK: " + timeTable.skill[i].subject + " " + time.format("H:mm"), w[dayIndex(timeTable.skill[i].day)], h[hourIndex(timeTable.skill[i].day)] + 70);
@@ -487,6 +534,31 @@ async function genCover(type) {
         }
     }
     ctx.fillStyle = "black";
+    ctx.textAlign = "left";
+    let allRegisteredTemp = _.union(registedData.registration.course, registedData.registration.hybrid);
+    let diff = 0;
+    let quarterStr = '';
+    for (let i in allQ.quarter) {
+        let bool = i < allQ.quarter.length - 1;
+        if (allRegisteredTemp.indexOf(allQ.quarter[i].quarterID) > -1) {
+            if (allQ.quarter[i].quarter < 10) {
+                ctx.font = "50px Cordia New";
+                ctx.fillText(allQ.quarter[i].name + ((bool) ? ' / ' : ''), 35 + diff, 244);
+            } else {
+                ctx.font = "bold 50px Cordia New";
+                ctx.fillText(allQ.quarter[i].name, 35 + diff, 244);
+                ctx.font = "50px Cordia New";
+                if (bool) {
+                    ctx.fillText(' / ', 185 + diff, 244);
+                    diff += 30;
+                }
+            }
+            diff += 145;
+        }
+    }
+    ctx.fillStyle = "black";
+    ctx.textAlign = "center";
+    ctx.font = "bold 50px Cordia New";
     if (type == 4 || type == 5) {
         if (type == 4) {
             var appRejCanvas = document.getElementById('appRejCover1');
@@ -546,6 +618,124 @@ const hourIndex = (day) => {
             return 4;
     }
 }
+async function genSummerCover(type) {
+    let str = $("#quarterSelect").val();
+    let startT = moment(0);
+    startT.date(12).month(2).year(2018).hour(3);
+    let endT = moment(0);
+    endT.date(30).month(2).year(2018).hour(23);
+    let [allQ, timeTable, stdName] = await Promise.all([
+        listQuarter("private"),
+        $.post("post/v1/studentTimeTable", { studentID: ID, year: str.slice(0, 4), quarter: str.slice(5) }),
+        name(ID)
+    ]);
+    // attend.sort((a, b) => {
+    //     return a.date - b.date;
+    // });
+    let thisQ;
+    for (let i in allQ.quarter) {
+        if (allQ.quarter[i].year === parseInt(str.slice(0, 4)) && allQ.quarter[i].quarter === parseInt(str.slice(5))) {
+            thisQ = allQ.quarter[i]
+        }
+    }
+    let coverCanvas = document.getElementById('smCover');
+    let ctx = coverCanvas.getContext('2d');
+    let template = document.getElementById('smTableTemplate');
+    ctx.drawImage(template, 0, 0, 1241, 880);
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = "bold 180px Cordia New";
+    ctx.fillText(thisQ.name, 340, 88);
+    ctx.font = "bold 85px Cordia New";
+    if (type === 1) {
+        ctx.fillText(ID + "1", 1070, 77);
+    } else if (type === 2) {
+        ctx.fillText(ID + "2", 1070, 77);
+    }
+    ctx.font = "bold 60px Cordia New";
+    ctx.fillText(stdName.firstname + " (" + stdName.nickname + ")", 980, 172);
+    ctx.font = "bold 150px Cordia New";
+    let thisCr = timeTable.course;
+    let hIndex = { 8: 350, 10: 530, 13: 710 };
+    ctx.textAlign = "left";
+    for (let i in thisCr) {
+        let t = moment(thisCr[i].day);
+        ctx.fillText(thisCr[i].courseName + " - " + thisCr[i].tutorName, 370, hIndex[t.hour()]);
+    }
+    // ctx.textAlign = "center";
+    // ctx.font = "bold 65px Cordia New";
+    // let temp = moment(0);
+    // let index = -1;
+    // let initH2 = 696;
+    // for (let i in attend) {
+    //     let initH = 696;
+    //     let initW = { 8: 380, 10: 470, 13: 560 };
+    //     if (attend[i].reason === 'SummerAbsent') {
+    //         let t = moment(attend[i].date);
+    //         if (temp.date() === t.date() && temp.month() === t.month() && temp.year() === t.year()) {
+    //             ctx.fillText("✓", initW[t.hour()], initH + 69 * index);
+    //         } else {
+    //             index += 1;
+    //             ctx.fillText(t.date(), 120, initH + 69 * index);
+    //             ctx.fillText(t.month() + 1, 200, initH + 69 * index);
+    //             ctx.fillText((t.year() + '').slice(2), 280, initH + 69 * index);
+    //             ctx.fillText("✓", initW[t.hour()], initH + 69 * index);
+    //         }
+    //         temp = t;
+    //     } else if (attend[i].type === 2) {
+    //         let t = moment(attend[i].date);
+    //         if (t.hour() === 15) {
+    //             ctx.fillText(t.date(), 660, initH2);
+    //             ctx.fillText(t.month() + 1, 750, initH2);
+    //             ctx.fillText((t.year() + '').slice(2), 840, initH2);
+    //             initH2 = initH2 + 69;
+    //         }
+    //     }
+    // }
+    if (type === 1) {
+        downloadCanvas(6);
+    } else if (type === 2) {
+        downloadCanvas(7);
+    }
+}
+async function genSmAppRej(type) {
+    let str = $("#quarterSelect").val();
+    let timeTable = await $.post("post/v1/studentTimeTable", { studentID: ID, year: str.slice(0, 4), quarter: str.slice(5) });
+    let smAppRejCanvas = document.getElementById('smAppRejCover');
+    let img = document.getElementById('recieptImg');
+    smAppRejCanvas.width = img.width;
+    smAppRejCanvas.height = img.height;
+    let h = img.height;
+    let w = img.width;
+    let ctx = smAppRejCanvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, w, h);
+    let template = document.getElementById('smReceiptTemplate');
+    ctx.globalAlpha = 0.6;
+    let templateH = (template.height / template.width) * w;
+    ctx.drawImage(template, 0, 0, w, templateH);
+    ctx.font = "bold 60px Cordia New";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    let hIndex = { 8: 1 * templateH / 5, 10: 1.5 * templateH / 3, 13: 10 * templateH / 13 };
+    let thisCr = timeTable.course;
+    for (let i in thisCr) {
+        let t = moment(thisCr[i].day);
+        ctx.fillText(thisCr[i].courseName + " - " + thisCr[i].tutorName, w / 3, hIndex[t.hour()]);
+    }
+    ctx.globalAlpha = 1;
+    ctx.textAlign = "center";
+    ctx.font = "bold 120px Cordia New";
+    ctx.rotate(Math.PI / 6);
+    let ray = Math.sqrt(Math.pow(w / 2, 2) + Math.pow(h / 2, 2));
+    if (type === 1) {
+        ctx.fillStyle = "red";
+        ctx.fillText("REJECT", ray, 0);
+    } else if (type === 2) {
+        ctx.fillStyle = "green";
+        ctx.fillText("FINISHED", ray, 0);
+    }
+    downloadCanvas(8);
+}
 function downloadCanvas(type) {
     let text = ""
     let canvas;
@@ -572,6 +762,18 @@ function downloadCanvas(type) {
             break;
         case 5:
             canvas = document.getElementById('appRejCover2');
+            text += ID + ".png";
+            break;
+        case 6:
+            canvas = document.getElementById('smCover');
+            text += ID + "1sm.png";
+            break;
+        case 7:
+            canvas = document.getElementById('smCover');
+            text += ID + "2sm.png";
+            break;
+        case 8:
+            canvas = document.getElementById('smAppRejCover');
             text += ID + ".png";
             break;
         default:
@@ -607,7 +809,6 @@ function changeStudentState(state) {
     if (confirm("ต้องการเปลี่ยน state?")) {
         if (state == "rejected") {
             genCover(4);
-            // removeAllTimeTable();
         } else if (state == "finished") {
             genCover(5);
         }
@@ -625,22 +826,40 @@ function changeStudentState(state) {
     }
 }
 
-// change sub state function
-async function changeSubState() {
-    let str = $("#quarterSelect").val();
-    let cookie = getCookieDict();
-    let tutorName = "";
-    if (cookie.monkeyWebUser == "99001") {
-        tutorName = "Mel";
-    } else if (cookie.monkeyWebUser == "99002") {
-        tutorName = "GG";
+// add chat func
+function addNewChat() {
+    let reqBody = {};
+    if ($("#chatMsg").val().length > 0) {
+        reqBody.msg = $("#chatMsg").val();
+        reqBody.studentID = ID;
+        $.post("post/v1/addChat", reqBody).then(cb => {
+            log(cb);
+            showChatData();
+            $("#chatMsg").val("");
+            $("#addChatModal").modal('hide');
+        });
     } else {
-        tutorName = await name(cookie.monkeyWebUser);
-        tutorName = tutorName.nicknameEn;
+        alert("Please input some text.");
     }
-    let studentFullState = await $.post("post/v1/getRegistrationState", { studentID: ID, quarter: str.slice(5), year: str.slice(0, 4) });
-    await $.post("post/v1/updateStudentRegistrationState", { studentID: ID, registrationState: studentFullState.registrationState, subRegistrationState: tutorName + "-" + $("#subState").val(), quarter: str.slice(5), year: str.slice(0, 4) });
-    location.reload();
+}
+
+// show chat data
+async function showChatData() {
+    let reqBody = {};
+    reqBody.studentID = ID;
+    reqBody.limit = 3;
+    let chatData = await $.post("post/v1/listChat", reqBody);
+    let cookie = getCookieDict();
+    let myID = cookie.monkeyWebUser;
+    let chats = chatData.chats;
+    $("#chatButt").empty();
+    for (let i in chats) {
+        if (chats[i].sender._id === parseInt(myID)) {
+            $("#chatButt").append("<row><p class='mb-0'><small><span class='fas fa-fw fa-user-secret'></span>&nbsp;me</small></p><button class='btn btn-primary col-10'>" + chats[i].msg + "</button></row>");
+        } else {
+            $("#chatButt").append("<row><p class='mb-0 float-right'><small>" + chats[i].sender.nicknameEn + "&nbsp;<span class='fas fa-fw fa-user'></span></small>&nbsp;</p><button class='btn btn-secondary col-10 offset-2'>" + chats[i].msg + "</button></row>");
+        }
+    }
 }
 
 // remove timeTable function
@@ -670,29 +889,31 @@ function removeSkill(skID) {
     }
 }
 async function removeAllTimeTable() {
-    let crPromise = [];
-    let fhbPromise = [];
-    let skPromise = [];
-    if ($(".cr").length > 0) {
-        for (let i = 0; i < $(".cr").length; i++) {
-            crPromise.push($(".cr")[i].id);
+    if (confirm("Are you sure to clear timetable?")) {
+        let crPromise = [];
+        let fhbPromise = [];
+        let skPromise = [];
+        if ($(".cr").length > 0) {
+            for (let i = 0; i < $(".cr").length; i++) {
+                crPromise.push($(".cr")[i].id);
+            }
+            await removeStudentCourse(ID, crPromise);
         }
-        await removeStudentCourse(ID, crPromise);
-    }
-    if ($(".hb").length > 0) {
-        for (let i = 0; i < $(".hb").length; i++) {
-            fhbPromise.push(removeHybridStudent(ID, $(".hb")[i].id));
+        if ($(".hb").length > 0) {
+            for (let i = 0; i < $(".hb").length; i++) {
+                fhbPromise.push(removeHybridStudent(ID, $(".hb")[i].id));
+            }
+            await Promise.all(fhbPromise);
         }
-        await Promise.all(fhbPromise);
-    }
-    if ($(".sk").length > 0) {
-        for (let i = 0; i < $(".sk").length; i++) {
-            skPromise.push(removeSkillStudent(ID, $(".sk")[i].id));
+        if ($(".sk").length > 0) {
+            for (let i = 0; i < $(".sk").length; i++) {
+                skPromise.push(removeSkillStudent(ID, $(".sk")[i].id));
+            }
+            await Promise.all(skPromise);
         }
-        await Promise.all(skPromise);
+        log("Finish to delete all data");
+        genStudentData();
     }
-    log("Finish to delete all data");
-    genStudentData();
 }
 
 // add timeTable function
@@ -706,6 +927,8 @@ async function addTimeTable(idenTime) {
         if (idenTime.indexOf("btn" + time.day() + '' + time.hour()) >= 0) {
             $subjSelect.append("<option value=" + allSubj.hybrid[i].hybridID + ">FHB:M</option>");
             $subjSelect.append("<option value=" + allSubj.hybrid[i].hybridID + ">FHB:P</option>");
+            $subjSelect.append("<option value=" + allSubj.hybrid[i].hybridID + ">FHB:C</option>");
+            $subjSelect.append("<option value=" + allSubj.hybrid[i].hybridID + ">FHB:E</option>");
         }
     }
     for (let i in allSubj.course) {
@@ -828,10 +1051,10 @@ async function genCommentViewBody() {
             $commentContentBody.append(
                 "<div id=" + comment.comment[i].commentID + ">" +
                 "<h5>" +
-                "<span class='fa fa-thumb-tack' style=" + ((comment.comment[i].priority > 0) ? 'color:red' : 'color:silver') + " onclick=\"editComment(\'1\',\'" + comment.comment[i].commentID + "\',\'" + comment.comment[i].priority + "\');\"></span> " +
-                "<span class='fa fa-check-circle' style=" + ((comment.comment[i].isCleared) ? 'color:green' : 'color:silver') + " onclick=\"editComment(\'2\',\'" + comment.comment[i].commentID + "\',\'" + comment.comment[i].isCleared + "\');\"></span> " +
+                "<span class='fas fa-thumbtack' style=" + ((comment.comment[i].priority > 0) ? 'color:red' : 'color:silver') + " onclick=\"editComment(\'1\',\'" + comment.comment[i].commentID + "\',\'" + comment.comment[i].priority + "\');\"></span> " +
+                "<span class='fas fa-check-circle' style=" + ((comment.comment[i].isCleared) ? 'color:green' : 'color:silver') + " onclick=\"editComment(\'2\',\'" + comment.comment[i].commentID + "\',\'" + comment.comment[i].isCleared + "\');\"></span> " +
                 tutorComment[i].nickname + " (" + moment(comment.comment[i].timestamp).format('DD MMM') + ") " +
-                "<span class='fa fa-trash' style='color:red' onclick=\"editComment(\'3\',\'" + comment.comment[i].commentID + "\','');\"></span>" +
+                "<span class='fas fa-trash' style='color:red' onclick=\"editComment(\'3\',\'" + comment.comment[i].commentID + "\','');\"></span>" +
                 "</h5>" +
                 "<p>" + comment.comment[i].message + "</p>" +
                 "</div>"
@@ -879,4 +1102,46 @@ function editComment(type, commentID, param) {
             break;
     }
     genCommentViewBody();
+}
+$("#absentViewButt").click(function () {
+    showStudentAbsentHistory();
+});
+async function showStudentAbsentHistory() {
+    let str = $("#quarterSelect").val();
+    let table = $("#absentHistoryTableBody");
+    let [config, allQ] = await Promise.all([
+        getConfig(),
+        listQuarter('private')
+    ]);
+    let today = moment();
+    let startDay;
+    let endDay;
+    for (let i in allQ.quarter) {
+        if (allQ.quarter[i].year === config.defaultQuarter.quarter.year && allQ.quarter[i].quarter === config.defaultQuarter.quarter.quarter) {
+            log(allQ.quarter[i]);
+            startDay = moment(parseInt(allQ.quarter[i].startDate));
+            endDay = moment(parseInt(allQ.quarter[i].endDate));
+        }
+    }
+    let [history, mQuota, pQuota] = await Promise.all([
+        $.post('post/v1/listAttendance', { studentStartDate: startDay.valueOf(), studentEndDate: endDay.valueOf(), studentID: ID }),
+        $.post('post/v1/getStudentQuota', { studentID: ID, subj: 'M' }),
+        $.post('post/v1/getStudentQuota', { studentID: ID, subj: 'P' })
+    ]);
+    table.empty();
+    for (let i in history) {
+        let t1 = moment(history[i].date);
+        let t2 = moment(history[i].timestamp);
+        table.append(
+            "<tr class='" + ((history[i].type === 1) ? 'table-danger' : 'table-success') + "'>" +
+            "<td class='text-center'>" + t1.format('ddd DD/MM/YY HH:00') + "</td>" +
+            "<td class='text-center'>" + ((history[i].courseName === undefined) ? 'FHB:' + ((history[i].type === 1) ? history[i].hybridSubject : history[i].subject) : history[i].courseName) + "</td>" +
+            "<td class='text-center'>" + ((history[i].type === 1) ? history[i].reason : "-") + "</td>" +
+            "<td class='text-center'>" + t2.format('ddd DD/MM/YY HH:mm') + "</td>" +
+            "</tr>"
+        )
+    }
+    $("#absentHistoryMQuota").html((mQuota.totalQuota - mQuota.usedQuota) + "/" + mQuota.totalQuota);
+    $("#absentHistoryPQuota").html((pQuota.totalQuota - pQuota.usedQuota) + "/" + pQuota.totalQuota);
+    $("#viewAbsentModal").modal('show');
 }

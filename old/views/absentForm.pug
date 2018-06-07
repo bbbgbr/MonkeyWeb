@@ -11,7 +11,12 @@ block body
             h2 แบบฟอร์มลา CR&FHB
             h4#pageBanner CRxxQx
     .container
-        .form-group
+        .row.mb-2
+            .col-6.pr-0
+                button#mQuota.btn.btn-outline-dark.col โควต้าลา FHB:M
+            .col-6.pl-0
+                button#pQuota.btn.btn-outline-dark.col โควต้าลา FHB:P
+        //- .form-group
             label#mQuota.col-6.px-0 โควต้าลา FHB:M
             label#pQuota โควต้าลา FHB:P
         .form-group
@@ -39,8 +44,19 @@ block body
                         td.text-center
                             buttun.col.btn.btn-15.selector -
         .form-group
+            label ลา:
+            select#reasonInput.custom-select.form-control
+                option ป่วย
+                option สอบ
+                option เข้าค่าย
+                option ลากิจ
+            //- input#reasonInput.form-control(type="text")
+        .form-group
             label เหตุผล:
-            input#reasonInput.form-control(type="text")
+            input#reasonOptionInput.form-control(type="text")
+        .custom-file
+            input#customFile.custom-file-input(type="file")
+            label.custom-file-label(for="customFile") Choose file
         .form-group
             label ผู้แจ้ง:
             input#senderInput.form-control(type="text")
@@ -49,7 +65,7 @@ block body
                 button#submitButt.float-right.btn.btn-success ยืนยัน
         .form-group.mb-0
             label ประวัติการลา/เพิ่ม
-            label.text-danger (ย้อนหลัง 3 เดือน)
+            label#tableLabel.text-danger
         .row
             .col-12.col-md-6
                 .table-responsive

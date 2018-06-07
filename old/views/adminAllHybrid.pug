@@ -1,0 +1,59 @@
+extends htmlTemplate
+block head
+    - var pageTitle = "All Hybrid"
+block script
+    script(src="js/adminAllHybrid.min.js")
+block body
+    .container-fluid
+        .row
+            .col-12.col-md-2.option-container.position-fixed
+                h1.mt-10 Hybrid
+                label
+                    span.fas.fa-fw.fa-lg.fa-th-large &nbsp;
+                    |Quarter
+                select.custom-select#quarter-select
+                    each i in quarterList
+                        if(i.year+'-'+i.quarter==selectedQuarter)
+                            option(value=i.year+'-'+i.quarter selected)= i.name
+                        else
+                            option(value=i.year+'-'+i.quarter)= i.name
+                label.mt-3
+                    span.fas.fa-fw.fa-lg.fa-filter &nbsp;
+                    |Filter
+                select.custom-select#subject
+                    option(value="0") ALL
+                    option(value="M") MATH
+                    option(value="P") PHYSIC
+                    option(value="C") CHEMISTRY
+                    option(value="E") ENGLISH
+            .col-12.col-md-10.offset-md-2.px-0
+                .table-responsive
+                    table.table.table-hover
+                        thead
+                            tr
+                                th.text-center Time
+                                th.text-center Subject
+                                th.text-center Student
+                        tbody
+                            each i in hybridList
+                                case i.subject
+                                    when 'M'
+                                        tr(class=i.subject+'hybrid table-warning' onclick='gotoHbInfoPage("'+i.subject+i.ID+'")')
+                                            td.text-center= i.day
+                                            td.text-center Math
+                                            td.text-center= i.student
+                                    when 'P'
+                                        tr(class=i.subject+'hybrid table-primary' onclick='gotoHbInfoPage("'+i.subject+i.ID+'")')
+                                            td.text-center= i.day
+                                            td.text-center Physic
+                                            td.text-center= i.student
+                                    when 'C'
+                                        tr(class=i.subject+'hybrid table-info' onclick='gotoHbInfoPage("'+i.subject+i.ID+'")')
+                                            td.text-center= i.day
+                                            td.text-center Chemistry
+                                            td.text-center= i.student
+                                    when 'E'
+                                        tr(class=i.subject+'hybrid table-secondary' onclick='gotoHbInfoPage("'+i.subject+i.ID+'")')
+                                            td.text-center= i.day
+                                            td.text-center English
+                                            td.text-center= i.student

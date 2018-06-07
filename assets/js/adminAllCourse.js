@@ -126,6 +126,7 @@ function generateCourseHtmlTable(course) {
             self.location = "/adminCoursedescription";
         };
         row.onclick = clickHandler(row);
+        cell0.className += "text-center";
         cell1.className += "text-center";
         cell2.className += "text-center";
         cell3.className += "text-center";

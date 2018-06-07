@@ -1,0 +1,38 @@
+extends htmlTemplate
+block head
+    -const pageTitle = "Skill Description"
+block body
+    .container
+        h1= 'SKILL:' + skInfo.subject
+        .row
+            p.col-auto= 'Day: ' + skInfo.day
+        .row
+            p.col-auto= 'skID: ' + skInfo.skillID
+        .table-responsive
+            table.table.table-hover
+                thead.thead-dark
+                    tr
+                        th.text-center(width='10%') No.
+                        th.text-center(width='15%') ID
+                        th.text-center(width='15%') Grade
+                        th.text-center(width='20%') Nickname
+                        th.text-center(width='20%') Name
+                        th.text-center(width='10%') FHB
+                        th.text-center(width='10%') CR
+                tbody
+                    - var index = 1
+                    each i in skStd
+                        tr(onclick='gotoStudentInfo("'+i._id+'");')
+                            td.text-center= index                  
+                            td.text-center= i._id
+                            td.text-center= i.grade>6?"S"+(i.grade-6):"P"+i.grade
+                            td.text-center= i.nickname
+                            td.text-center= i.firstname
+                            td.text-center: span(class= 'fa fa-' + (i.hasHB?'check':'times'))
+                            td.text-center: span(class= 'fa fa-' + (i.hasCR?'check':'times'))
+                        - index += 1
+    script.
+        function gotoStudentInfo(ID){
+            writeCookie("monkeyWebAdminAllstudentSelectedUser", ID);
+            self.location = "/adminStudentprofile";
+        }      

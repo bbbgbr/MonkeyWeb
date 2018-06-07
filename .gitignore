@@ -5,3 +5,7 @@
 .DS_Store
 .eslintrc.json
 =4.1.1
+/key
+err.log
+/WebData
+.env

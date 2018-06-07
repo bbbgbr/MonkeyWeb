@@ -1,21 +1,18 @@
 let cookie = getCookieDict();
 let ID = "";
-if (cookie.monkeyWebUser == undefined) {
-    self.location = "/login";
-} else {
-    ID = cookie.monkeyWebUser;
-}
+ID = cookie.monkeyWebUser;
 let path = '';
+let year = '';
+let quarter = '';
 let state = '';
-genHeader();
-genCost();
+initData();
 
 $("#file-1").change(function () {
     uploadImg();
 });
 
 $("#submit").click(function () {
-    if ($("#preview").attr("src") == "images/noImage.svg") {
+    if ($("#preview").attr("src") == "images/nopic.png") {
         alert("กรุณา Upload ใบโอน");
     } else {
         if (state == "pending") {
@@ -28,37 +25,25 @@ $("#submit").click(function () {
     }
 });
 
-async function genHeader() {
+async function initData() {
     let [config, allQ] = await Promise.all([getConfig(), listQuarter("public")]);
     for (let i in allQ.quarter) {
-        if (allQ.quarter[i].year == year && allQ.quarter[i].quarter == quarter) {
-            $("#receiptHead").html("รายละเอียดการโอนเงินคอร์ส " + allQ.quarter[i].name);
+        year = config.defaultQuarter.registration.year;
+        quarter = config.defaultQuarter.registration.quarter;
+        if (allQ.quarter[i].year === year && allQ.quarter[i].quarter === quarter) {
             path = config.receiptPath.slice(config.receiptPath.search("MonkeyWebData") + 14) + allQ.quarter[i].name + "/" + ID;
         }
     }
+    getState();
     loadPreview();
 }
-async function genCost() {
+async function getState() {
     let stdInfo = await studentProfile(ID);
     for (let i in stdInfo.quarter) {
         if (stdInfo.quarter[i].year == year && stdInfo.quarter[i].quarter == quarter) {
             state = stdInfo.quarter[i].registrationState
         }
     }
-    let promise = [];
-    for (let i in stdInfo.courseID) {
-        promise.push(courseInfo(stdInfo.courseID[i]));
-    }
-    let crInfo = await Promise.all(promise);
-    let crCount = 0;
-    for (let i in crInfo) {
-        if (crInfo[i].year == year && crInfo[i].quarter == quarter) {
-            crCount += 1;
-        }
-    }
-    if (stdInfo.level.slice(0, 2) == 12) {
-        $(".money").html("ชำระเงินจำนวน " + (crCount * extraFee) + " บาท");
-    } else $(".money").html("ชำระเงินจำนวน " + (crCount * fee) + " บาท");
 }
 
 function uploadImg() {
@@ -100,7 +85,7 @@ async function loadPreview() {
                 $("#preview").attr("src", path + ".jpeg");
             }).fail(() => {
                 log("can't find picture");
-                $("#preview").attr("src", "images/noImage.svg");
+                $("#preview").attr("src", "images/nopic.png");
             });
         });
     });

@@ -7,7 +7,7 @@ var slotName = ['Hybrid', 'Admin', 'Sheet', 'Com', 'Reading', 'Course'];
 
 async function checkIn() {
     let cookie = getCookieDict();
-    var tutorName = await name(cookie.monkeyWebUser);
+    var tutorName = await $.post("post/v1/userInfo", { userID: cookie.monkeyWebUser });
     try {
         var checkInResponse = await $.post('/post/v1/tutorCheckIn', {
             tutorID: cookie.monkeyWebUser
@@ -33,7 +33,18 @@ async function checkIn() {
                 'TimeStamp: ' + moment(date).format("DD/MM/YY HH:mm:ss") +
                 '</div>'
             );
-            await lineNotify("MonkeyStaff", "\n" + tutorName.firstname + ' ' + tutorName.nickname + "\nCheckin:" + moment(date).format("DD/MM/YY HH:mm:ss"));
+            let subPos = tutorName.subPosition;
+            if (subPos === undefined) {
+                if (tutorName.position.trim().toLowerCase() === "mel") {
+                    await lineNotify("MonkeyTrainee", "\n" + tutorName.firstname + ' ' + tutorName.nickname + "\nCheckin:" + moment(date).format("DD/MM/YY HH:mm:ss"));
+                } else {
+                    await lineNotify("MonkeyStaff", "\n" + tutorName.firstname + ' ' + tutorName.nickname + "\nCheckin:" + moment(date).format("DD/MM/YY HH:mm:ss"));
+                }
+            } else if (subPos.trim().toLowerCase() === "trainee") {
+                await lineNotify("MonkeyTrainee", "\n" + tutorName.firstname + ' ' + tutorName.nickname + "\nCheckin:" + moment(date).format("DD/MM/YY HH:mm:ss"));
+            } else {
+                await lineNotify("MonkeyStaff", "\n" + tutorName.firstname + ' ' + tutorName.nickname + "\nCheckin:" + moment(date).format("DD/MM/YY HH:mm:ss"));
+            }
             $('#checkInModal').modal('show');
         }
     } catch (error) {
@@ -101,7 +112,7 @@ async function checkOut() {
 
 async function checkOutSubmit() {
     let cookie = getCookieDict();
-    var tutorName = await name(cookie.monkeyWebUser);
+    var tutorName = await $.post("post/v1/userInfo", { userID: cookie.monkeyWebUser });
     try {
         var checkOutResponse = await $.post('/post/v1/tutorCheckOut', {
             tutorID: cookie.monkeyWebUser,
@@ -112,7 +123,18 @@ async function checkOutSubmit() {
             slot4: slot[4],
             slot5: slot[5]
         });
-        await lineNotify("MonkeyStaff", "\n" + tutorName.firstname + ' ' + tutorName.nickname + "\nCheckout:" + moment(checkOutDate).format("DD/MM/YY HH:mm:ss"));
+        let subPos = tutorName.subPosition;
+        if (subPos === undefined) {
+            if (tutorName.position.trim().toLowerCase() === "mel") {
+                await lineNotify("MonkeyTrainee", "\n" + tutorName.firstname + ' ' + tutorName.nickname + "\nCheckout:" + moment(checkOutDate).format("DD/MM/YY HH:mm:ss"));
+            } else {
+                await lineNotify("MonkeyStaff", "\n" + tutorName.firstname + ' ' + tutorName.nickname + "\nCheckout:" + moment(checkOutDate).format("DD/MM/YY HH:mm:ss"));
+            }
+        } else if (subPos.trim().toLowerCase() === "trainee") {
+            await lineNotify("MonkeyTrainee", "\n" + tutorName.firstname + ' ' + tutorName.nickname + "\nCheckout:" + moment(checkOutDate).format("DD/MM/YY HH:mm:ss"));
+        } else {
+            await lineNotify("MonkeyStaff", "\n" + tutorName.firstname + ' ' + tutorName.nickname + "\nCheckout:" + moment(checkOutDate).format("DD/MM/YY HH:mm:ss"));
+        }
         $('#checkOutSummaryModal').modal('hide');
     } catch (error) {
         $('#checkOutSummaryModal').modal('hide');

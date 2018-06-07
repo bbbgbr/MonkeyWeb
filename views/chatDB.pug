@@ -1,0 +1,38 @@
+extends devTemplate
+block content
+	.block-header
+		h2 CHAT
+	.row.clearfix
+		.col-lg-12.col-md-12.col-sm-12.col-xs-12
+			.card
+				.header
+					h2
+						| CHAT DEMO
+						small Enter student id and chat message
+				.body
+					form
+						.form-group.form-float
+							.form-line
+								input#studentID.form-control(type='text')
+								label.form-label Student ID
+							br
+							.form-line
+								input#message.form-control(type='text')
+								label.form-label Message
+						button.btn.btn-primary.m-t-15.waves-effect(type='button', onclick='sendMessage();') CHAT
+	.row.clearfix
+		.col-lg-12.col-md-12.col-sm-12.col-xs-12
+			.card
+				.header
+					h2
+						| CHAT DEMO
+						small Enter student id
+				.body
+					form
+						.form-group.form-float
+							.form-line
+								input#viewStudentID.form-control(type='text')
+								label.form-label Student ID
+						button.btn.btn-primary.m-t-15.waves-effect(type='button', onclick='redirectChat();') VIEW
+block script
+		script(src='dev/js/chat.js')

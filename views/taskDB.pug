@@ -1,0 +1,26 @@
+extends devTemplate
+block content
+	.block-header
+		h2 TASK
+	each task in tasks
+		+card(task)
+	
+block script
+		script(src='dev/js/task.js')
+mixin card(task)
+	.col-lg-4.col-md-4.col-sm-6.col-xs-12
+		.card
+			.header.bg-blue-grey
+				h2
+					= task.title
+					small= task.createBy
+				ul.header-dropdown.m-r--5
+					li.dropdown
+						a.dropdown-toggle(href='javascript:void(0);', data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false')
+							i.material-icons more_vert
+						ul.dropdown-menu.pull-right
+							li
+								a(href='taskDetail?id=' + task._id) View
+							li
+								a(href='javascript:deleteTask("' + task._id + '");') Delete
+			.body= task.detail

@@ -1,0 +1,23 @@
+extends devTemplate
+block content
+	.block-header
+		h2 CHAT DETAIL
+	each chat in chats
+		+card(chat)
+block script
+		script(src='dev/js/chatDetail.js')
+mixin card(chat)
+	.col-lg-4.col-md-4.col-sm-6.col-xs-12
+		.card
+			.header.bg-blue-grey
+				h2
+					= chat.sender.nicknameEn
+					small= chat.timestamp
+				ul.header-dropdown.m-r--5
+					li.dropdown
+						a.dropdown-toggle(href='javascript:void(0);', data-toggle='dropdown', role='button', aria-haspopup='true', aria-expanded='false')
+							i.material-icons more_vert
+						ul.dropdown-menu.pull-right
+							li
+								a(href='javascript:deleteChat("' + chat.chatID + '");') Delete
+			.body= chat.msg

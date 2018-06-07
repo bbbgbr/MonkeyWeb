@@ -1,53 +1,59 @@
-extends oldHtmlTemplate
+extends htmlTemplate
 block head
-    -const pageTitle = "Registration Name"
+    - const pageTitle = "Registration Name"
+block script
     script(src="js/student.min.js")
-    script(src="js/regNmCal.js")
+    script(src="js/regNmCal.min.js")
 block body
     .container
-        form
-            .form-group
-                label.control-label ชื่อ:
-                input#nname.form-control(type="text" placeholder="ชื่อเล่น (ภาษาไทย)")
-                input#name.form-control(type="text" placeholder="ชื่อจริง (ภาษาไทย)")
-                input#sname.form-control(type="text" placeholder="นามสกุล (ภาษาไทย)")
-                input#nnameE.form-control(type="text" placeholder="Nickname (English)")
-                input#nameE.form-control(type="text" placeholder="Firstname (English)")
-                input#snameE.form-control(type="text" placeholder="Surname (English)")
-            .form-group
-                label.control-label Email:
-                input#email.form-control(type="email" placeholder="Email")
-            .form-group
-                label.control-label เบอร์ติดต่อ:
-                input#parentNum.form-control(type="tel" placeholder="เบอร์ติดต่อผู้ปกครอง")
-                input#studentNum.form-control(type="tel" placeholder="เบอร์ติดต่อนักเรียน")
-            .form-group
-                label.control-label ชั้น:
-                select#grade.form-control(name="grade")
-                    option(value="0") กรุณาเลือกชั้นเรียน
-                    option(value="4") ประถม 4
-                    option(value="5") ประถม 5
-                    option(value="6") ประถม 6
-                    option(value="7") มัธยม 1
-                    option(value="8") มัธยม 2
-                    option(value="9") มัธยม 3
-                    option(value="10") มัธยม 4
-                    option(value="11") มัธยม 5
-                    option(value="12") มัธยม 6
+        .form-group.mt-2
+            label
+                span.fa.fa-lg.fa-user-o
+                |&nbsp;ชื่อ
+            input#nname.form-control(type="text" placeholder="ชื่อเล่น (ภาษาไทย)")
+            input#name.form-control(type="text" placeholder="ชื่อจริง (ภาษาไทย)")
+            input#sname.form-control(type="text" placeholder="นามสกุล (ภาษาไทย)")
+            input#nnameE.form-control(type="text" placeholder="Nickname (English)")
+            input#nameE.form-control(type="text" placeholder="Firstname (English)")
+            input#snameE.form-control(type="text" placeholder="Surname (English)")
+        .form-group
+            label
+                span.fa.fa-lg.fa-envelope-o
+                |&nbsp;E-Mail
+            input#email.form-control(type="email" placeholder="Email")
+        .form-group
+            label
+                span.fa.fa-lg.fa-mobile
+                |&nbsp;เบอร์ติดต่อ
+            input#parentNum.form-control(type="tel" placeholder="เบอร์ติดต่อผู้ปกครอง")
+            input#studentNum.form-control(type="tel" placeholder="เบอร์ติดต่อนักเรียน")
+        .form-group
+            label
+                span.fa.fa-lg.fa-graduation-cap
+                |&nbsp;ชั้น
+            select#grade.custom-select(name="grade")
+                option(value="0") กรุณาเลือกชั้นเรียน
+                option(value="4") ประถม 4
+                option(value="5") ประถม 5
+                option(value="6") ประถม 6
+                option(value="7") มัธยม 1
+                option(value="8") มัธยม 2
+                option(value="9") มัธยม 3
+                option(value="10") มัธยม 4
+                option(value="11") มัธยม 5
+                option(value="12") มัธยม 6
         .row
-            .col-sm-12.text-right
-                button#next.btn.btn-default(onClick="this.blur();" data-toggle="modal" data-target="#myModal") Next 
-                    span.glyphicon.glyphicon-chevron-right
-        //- Modal for confirm
+            .col
+                button#next.btn.btn-success.float-right(onClick="this.blur();" data-toggle="modal" data-target="#myModal") Next
+                    span.fa.fa-chevron-right
         .modal.fade#myModal(role="dialog")
-            .modal-dialog.modal-lg
+            .modal-dialog(role="document")
                 .modal-content
                     .modal-header
-                        button.close(type="button" data-dismiss="modal") &times;
                         h4.modal-title กรุณาตรวจสอบความถูกต้องของข้อมูล
+                        button.close(type="button" data-dismiss="modal"): span &times;
                     .modal-body
                         p หากกด "Confirm" แล้วต้องการแก้ไข กรุณาที่ต่อที่ศูนย์
                     .modal-footer
                         button.btn.btn-success(type="button" onClick="next()") Confirm
-                        button.btn.btn-default(type="button" data-dismiss="modal") Close
-    
+                        button.btn.btn-danger(type="button" data-dismiss="modal") Close

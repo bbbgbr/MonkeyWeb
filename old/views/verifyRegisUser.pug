@@ -1,0 +1,22 @@
+extends htmlTemplate
+block head
+    -const pageTitle = "verify user"
+block script
+    script(type="text/javascript" src="js/sha3.js")
+    script(type="text/javascript" src="js/verifyRegisUser.js")
+block body
+    .container
+        .col-md-4.offset-md-4.mt-3
+            strong For Admin
+            form.align-middle
+                .form-group
+                    label(for="usr") ID: 
+                    input(type="text" autofocus placeholder="Please insert your ID.").form-control#usr
+                .form-group#pwdFromGroup
+                    label(for="pwd") Password: 
+                    input(type="password" placeholder="Please insert your password.").form-control#pwd
+                .form-group.col-md-4.offset-md-4
+                    button.btn.btn-success.form-control.loginBtn#btn(type="button") Verify
+    .container
+        .row
+            .text-center.center-block

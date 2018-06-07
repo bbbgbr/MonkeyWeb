@@ -38,8 +38,9 @@ block body
         .form-group
             label วิชา:
             select#subjInput.form-control
-                option(value="M") FHB:M
-                option(value="P") FHB:P
+        .form-group
+            label เหตุผล(ถ้ามี):
+            input#reasonInput.form-control(type="text")
         .form-group
             label ผู้แจ้ง:
             input#senderInput.form-control(type="text")
@@ -48,7 +49,7 @@ block body
                 button#submitButt.float-right.btn.btn-success ยืนยัน
         .form-group.mb-0
             label ประวัติการลา/เพิ่ม
-            label.text-danger (ย้อนหลัง 3 เดือน)
+            label#tableLabel.text-danger (ย้อนหลัง 3 เดือน)
         .row
             .col-12.col-md-6
                 .table-responsive

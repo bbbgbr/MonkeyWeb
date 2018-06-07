@@ -1,6 +1,6 @@
 extends htmlTemplate
 block head
-    -const pageTitle = "Register"
+    - const pageTitle = "Register"
     style.
         .cr {
             background-color: #FFE4F5!important;
@@ -15,200 +15,299 @@ block head
             border-color: transparent!important;
         }
 block script
-    script(src="js/constRegisQuarter.js")
     script(src="js/regisPage.min.js")
 mixin crSelectButt(value)
-    button.col.col-md-6.btn.btn-light.cr-select.mb-1(class="btn"+value+"-1") -
-    button.col.col-md-6.btn.btn-light.cr-select(class="btn"+value+"-2") -
+    -
+        var thisD = value.slice(0,1)
+        var thisH = value.slice(2)
+        var loopN = 0
+    each i in allCr
+        - var t = new Date(i.day)
+        if t.getDay()==thisD && t.getHours()==thisH
+            - var sugg = true
+            each j in suggCr.courseID
+                if j == i._id
+                    button.col.col-md-6.btn.btn-light.cr-select.mb-1(id=i._id style='box-shadow:0px 0px 5px #64dd17')= i.courseName+"-"+i.tutorName
+                    - loopN += 1
+                    - sugg = false
+            if sugg
+                button.col.col-md-6.btn.btn-light.cr-select.mb-1(id=i._id)= i.courseName+"-"+i.tutorName
+                - loopN += 1
+    - for (var i = loopN; i < 2; i++)
+        button.col.col-md-6.btn.btn-light.disabled.mb-1 -
 mixin fhbSelectButt(value)
-    button.col.btn.disabled.cr(class="cr"+value) -
-    button.col.col-md-6.btn.btn-light.hb-select.mb-1(class="fhb"+value+"-1") FHB:M
-    button.col.col-md-6.btn.btn-light.hb-select(class="fhb"+value+"-2") FHB:P
+    -
+        var thisD = value.slice(0,1)
+        var thisH = value.slice(2)
+        var hasCr = false
+    each i in allCr
+        - var t = new Date(i.day)
+        if t.getDay()==thisD && t.getHours()==thisH
+            button.col.cr.btn.btn-light(id=i._id)= i.courseName+"-"+i.tutorName
+            - hasCr = true
+    if !hasCr
+        each i in allHB
+            - var t = new Date(i.day)
+            if t.getDay()==thisD && t.getHours()==thisH
+                select.custom-select
+                    option(value="0") +
+                    option(value=i._id) FHB:M
+                    option(value=i._id) FHB:P
+                    if parseInt(webUser.level.slice(0,-1)) > 8
+                        option(value=i._id) FHB:C
+                        option(value=i._id) FHB:E
 mixin skSelectButt(value)
-    button.col.btn.disabled.cr(class="cr"+value) -
-    button.col.btn.disabled.hb(class="fhb"+value) -
-    button.col.col-md-6.btn.btn-light(class="skl"+value+"-1 sk-select") SKILL:M
-    button.col.col-md-6.btn.btn-light(class="skl"+value+"-2 sk-select") SKILL:E
-mixin submitButt(value)
-    button.col.btn.disabled.cr(class="cr"+value) -
-    button.col.btn.disabled.hb(class="fhb"+value) -
-    button.col.btn.disabled.sk(class="sk"+value) -
+    -
+        var thisD = value.slice(0,1)
+        var thisH = value.slice(2)
+        var hasCr = false
+        var hasHb = false
+        function timeToStr(t) {
+            if(t.getMinutes()<10) return t.getHours()+':0'+t.getMinutes()
+            return t.getHours()+':'+t.getMinutes()
+        }
+    each i in allCr
+        - var t = new Date(i.day)
+        if t.getDay()==thisD && t.getHours()==thisH
+            button.col.cr.btn.btn-light(id=i._id)= i.courseName+"-"+i.tutorName
+            - hasCr = true
+    if allHB != undefined
+        each i in allHB
+            - var t = new Date(i.day)
+            if t.getDay()==thisD && t.getHours()==thisH
+                button.col.hb.btn.btn-light(id=i._id)= 'FHB:'+i.subj
+                - hasHb = true
+    if  !(hasCr||hasHb)
+        select.custom-select
+            option(value="0") +
+            each i in allSk
+                - var t = new Date(i.day)
+                if t.getDay()==thisD && t.getHours()>(parseInt(thisH)-1+'') && t.getHours()<(parseInt(thisH)+2+'')
+                    option(value=i._id)='Math ('+timeToStr(t)+')'
+                    option(value=i._id)='Eng ('+timeToStr(t)+')'
+                    option(value=i._id)='Math&Eng ('+timeToStr(t)+')'
+mixin finalSelectButt(value)
+    -
+        var thisD = value.slice(0,1)
+        var thisH = value.slice(2)
+        function timeToStr(t) {
+            if(t.getMinutes()<10) return t.getHours()+':0'+t.getMinutes()
+            return t.getHours()+':'+t.getMinutes()
+        }
+    each i in allCr
+        - var t = new Date(i.day)
+        if t.getDay()==thisD && t.getHours()==thisH
+            button.col.cr.btn.btn-light(id=i._id)= i.courseName+"-"+i.tutorName
+    if allHB != undefined
+        each i in allHB
+            - var t = new Date(i.day)
+            if t.getDay()==thisD && t.getHours()==thisH
+                button.col.hb.btn.btn-light(id=i._id)= 'FHB:'+i.subj
+    if allSk != undefined
+        each i in allSk
+            - var t = new Date(i.day)
+            if t.getDay()==thisD && t.getHours()>(parseInt(thisH)-1+'') && t.getHours()<(parseInt(thisH)+2+'')
+                button.col.sk.btn.btn-light(id=i._id)= 'SK:'+i.subj+' ('+timeToStr(t)+')'
 block body
     .container-fluid
         .row.position-fixed.w-100(style="z-index:2")
             .progress.w-100(style="height:30px")
-                .progress-bar.progress-bar-striped.progress-bar-animated#progressBar(style="width:30%") ลงทะเบียน Course
+                case thisPage
+                    when 1
+                        .progress-bar.progress-bar-striped.progress-bar-animated(style="width:30%;font-size:25px") Course
+                    when 2
+                        .progress-bar.progress-bar-striped.progress-bar-animated(style="width:50%;font-size:25px") Full Hybrid
+                    when 3
+                        .progress-bar.progress-bar-striped.progress-bar-animated(style="width:70%;font-size:25px") Skill
+                    when 4
+                        .progress-bar.progress-bar-striped.progress-bar-animated(style="width:100%;font-size:25px") ยืนยันการลงทะเบียน
         .row(style="padding-top:30px")
             .card.w-100.mb-2
                 .card-header
                     span.fa.fa-user
                     |&nbsp;ข้อมูลส่วนตัว
                 .card-body
-                    p#nameCard Name
-                    p#gradeCard Grade
-                    p#levelCard Level
-        .row#crRegis-table
-            .table-responsive
-                table.table.table-bordered
-                    thead.thead-light
-                        tr
-                            th &nbsp;
-                            th.text-center SAT
-                            th.text-center SUN
-                    tbody
-                        tr
-                            td.text-center 8-10
-                            td: +crSelectButt("6-8")
-                            td: +crSelectButt("0-8")
-                        tr
-                            td.text-center 10-12
-                            td: +crSelectButt("6-10")
-                            td: +crSelectButt("0-10")
-                        tr
-                            td.text-center 13-15
-                            td: +crSelectButt("6-13")
-                            td: +crSelectButt("0-13")
-                        tr
-                            td.text-center 15-17
-                            td: +crSelectButt("6-15")
-                            td: +crSelectButt("0-15")
-            .col
+                    p=webUser.nickname + " " + webUser.firstname
+                    p="ชั้น: " + ((webUser.grade>6)?"มัธยม " + (webUser.grade-6):"ประถม " + webUser.grade)
+                    p="Level: " + webUser.level
+        case thisPage
+            when 1
                 .row
-                    .col#crDescription
-                        h5(style="color:red") *คอร์สที่มีไฮไลต์สีเขียวคือคอร์สที่แนะนำให้ลงทะเบียน
-                        h5#description-title Description
-        .row#fhbRegis-table
-            .col-12    
-                label.control-label ข้อกำหนด:
-                p 1. สำหรับนักเรียนที่ไม่ต้องการเรียน Full Hybrid สามารถข้ามหน้านี้ได้เลย
-                p 2. สำหรับนักเรียนที่ไม่ได้เปิดระบบ Full Hybrid จะต้องเปิดระบบก่อน โดยจะต้องเติมเงินเข้าไปในระบบเป็นจำนวน 10,000 บาท/วิชา
-            .table-responsive
-                table.table.table-bordered
-                    thead.thead-light
-                        tr
-                            th &nbsp;
-                            th.text-center TUE
-                            th.text-center THU
-                    tbody
-                        tr
-                            td.text-center 17-19
-                            td: +fhbSelectButt("2-17")
-                            td: +fhbSelectButt("4-17")
-                    thead.thead-light
-                        tr
-                            th &nbsp;
-                            th.text-center SAT
-                            th.text-center SUN
-                    tbody
-                        tr
-                            td.text-center 8-10
-                            td: +fhbSelectButt("6-8")
-                            td: +fhbSelectButt("0-8")
-                        tr
-                            td.text-center 10-12
-                            td: +fhbSelectButt("6-10")
-                            td: +fhbSelectButt("0-10")
-                        tr
-                            td.text-center 13-15
-                            td: +fhbSelectButt("6-13")
-                            td: +fhbSelectButt("0-13")
-                        tr
-                            td.text-center 15-17
-                            td: +fhbSelectButt("6-15")
-                            td: +fhbSelectButt("0-15")
-        .row#skRegis
-            .col-12
-                label.control-label ข้อกำหนด:
-                p 1. สำหรับนักเรียนที่เรียนสกิลจบแล้วสามารถกด Next ได้เลย
-                p 2. การลงทะเบียนสกิลจะทำเฉพาะการเรียนที่สาขาสยามเท่านั้น
-                p 3. กรณีที่เรียนสกิลที่สาย 3 กด Next ได้เลย
-                p 4. สามารถลงเฉพาะเลขหรืออังกฤษได้ แต่ไม่สามารถลงเวลาทับกันได้
-            .table-responsive
-                table.table.table-bordered
-                    thead.thead-light
-                        tr
-                            th(style="width:14%") &nbsp;
-                            th.text-center(style="width:43%") SAT
-                            th.text-center(style="width:43%") SUN
-                    tbody
-                        tr
-                            td.text-center 8-10
-                            td
-                                +skSelectButt("6-8")
-                            td
-                                +skSelectButt("0-8")
-                        tr
-                            td.text-center 10-12
-                            td
-                                +skSelectButt("6-10")
-                            td
-                                +skSelectButt("0-10")
-                        tr
-                            td.text-center 13-15
-                            td
-                                +skSelectButt("6-13")
-                            td
-                                +skSelectButt("0-13")
-                        tr
-                            td.text-center 15-17
-                            td
-                                +skSelectButt("6-15")
-                            td
-                                +skSelectButt("0-15")
-        .row#submit-table
-            .col-12
-                h4(style="color:red") ยืนยันการลงทะเบียนตามนี้
-            .table-responsive
-                table.table.table-bordered
-                    thead.thead-light
-                        tr
-                            th &nbsp;
-                            th.text-center TUE
-                            th.text-center THU
-                    tbody
-                        tr
-                            td.text-center 17-19
-                            td: +submitButt("2-17")
-                            td: +submitButt("4-17")
-                    thead.thead-light
-                        tr
-                            th &nbsp;
-                            th.text-center SAT
-                            th.text-center SUN
-                    tbody
-                        tr
-                            td.text-center 8-10
-                            td: +submitButt("6-8")
-                            td: +submitButt("0-8")
-                        tr
-                            td.text-center 10-12
-                            td: +submitButt("6-10")
-                            td: +submitButt("0-10")
-                        tr
-                            td.text-center 13-15
-                            td: +submitButt("6-13")
-                            td: +submitButt("0-13")
-                        tr
-                            td.text-center 15-17
-                            td: +submitButt("6-15")
-                            td: +submitButt("0-15")
-        .row#crFeeBox
-            .col
-                h5.float-right#crFee รวมเป็นเงิน 0 บาท
-        .row
-            button.col-auto.mr-auto.ml-1.btn.btn-primary#backButt(type="button") Back
-            button.col-auto.ml-auto.mr-1.btn.btn-primary#nextButt(type="button") Next
-        //- Skill Modal
-        .modal.fade#skillModal
-            .modal-dialog.modal-sm
-                .modal-content
-                    .modal-header
-                        h5 เลือกเวลา
-                        button(type="button" class="close" data-dismiss="modal") &times;
-                    .modal-body#skillTime
-        //- Loading Modal
-        .modal.fade#loadingModal
-            .modal-dialog.modal-sm
-                .modal-content
-                    .modal-body
-                        h5 Loding, Please wait...
+                    .table-responsive
+                        table.table.table-bordered
+                            thead.thead-light
+                                tr
+                                    th &nbsp;
+                                    th.text-center SAT
+                                    th.text-center SUN
+                            tbody
+                                tr
+                                    td.text-center(width='20%') 8-10
+                                    td(width='40%'): +crSelectButt("6-8")
+                                    td(width='40%'): +crSelectButt("0-8")
+                                tr
+                                    td.text-center 10-12
+                                    td: +crSelectButt("6-10")
+                                    td: +crSelectButt("0-10")
+                                tr
+                                    td.text-center 13-15
+                                    td: +crSelectButt("6-13")
+                                    td: +crSelectButt("0-13")
+                                tr
+                                    td.text-center 15-17
+                                    td: +crSelectButt("6-15")
+                                    td: +crSelectButt("0-15")
+                    .col
+                        .row
+                            .col
+                                h5(style="color:red") *คอร์สที่มีไฮไลต์สีเขียวคือคอร์สที่แนะนำให้ลงทะเบียน
+                                if parseInt(webUser.level.slice(0,-1)) < 8
+                                    h5(style="color:green") ควรลงทะเบียนคณิตศาสตร์ทั้ง 2 คอร์สที่ไฮไลต์ เพื่อเพิ่มประสิทธิภาพในการเรียน
+                                if parseInt(webUser.level.slice(0,-1)) > 4 && parseInt(webUser.level.slice(0,-1)) < 7
+                                    h5(style="color:green") วิชาภาษาอังกฤษให้เลือกลงได้ 1 คอร์สเท่านั้น
+                                if parseInt(webUser.level.slice(0,-1)) == 7
+                                    h5(style="color:green") วิชาภาษาอังกฤษเลือกลง ES1a หรือ ES1c คู่กับ ES123z ได้
+                                    h5(style="color:green") วิชาฟิสิกส์ให้เลือกลงได้เพียง 1 คอร์สเท่านั้น
+                                if parseInt(webUser.level.slice(0,-1)) > 7 && parseInt(webUser.level.slice(0,-1)) < 10
+                                    h5(style="color:green") ลงทะเบียนเลขและฟิสิกส์ได้เพียงวิชาละคอร์สเท่านั้น
+                                    h5(style="color:green") วิชาภาษาอังกฤษเลือกลง ES23b หรือ ES23a คู่กับ ES123z ได้
+                                if parseInt(webUser.level.slice(0,-1)) > 9
+                                    h5(style="color:green") ลงทะเบียนได้เพียงวิชาละคอร์สเท่านั้น
+                                h5 Description
+                                each i in allCr
+                                    if(i.description!=' ' && i.description!='-' && i.description!='')
+                                        p=i.courseName + " คือ " + i.description
+                        .row
+                            .col
+                                button.float-right.btn.btn-success#gotoHBBtn Next
+            when 2
+                .row
+                    .col-12
+                        if parseInt(webUser.level.slice(0,-1)) > 7
+                            h5(style="color:green") ทุกคนควรลง FHB:M อย่างน้อย 1 ช่อง
+                        label.control-label ข้อกำหนด:
+                        p 1. สำหรับนักเรียนที่ไม่ต้องการเรียน Full Hybrid สามารถข้ามหน้านี้ได้เลย
+                        p 2. สำหรับนักเรียนที่ไม่ได้เปิดระบบ Full Hybrid จะต้องทำการเปิดระบบก่อน โดยอ่านรายละเอียดได้ที่หน้าแรก(Monkey)
+                    .table-responsive
+                        table.table.table-bordered
+                            thead.thead-light
+                                tr
+                                    th &nbsp;
+                                    th.text-center TUE
+                                    th.text-center THU
+                            tbody
+                                tr
+                                    td.text-center(width='20%') 17-19
+                                    td(width='40%'): +fhbSelectButt("2-17")
+                                    td(width='40%'): +fhbSelectButt("4-17")
+                            thead.thead-light
+                                tr
+                                    th &nbsp;
+                                    th.text-center SAT
+                                    th.text-center SUN
+                            tbody
+                                tr
+                                    td.text-center(width='20%') 8-10
+                                    td(width='40%'): +fhbSelectButt("6-8")
+                                    td(width='40%'): +fhbSelectButt("0-8")
+                                tr
+                                    td.text-center 10-12
+                                    td: +fhbSelectButt("6-10")
+                                    td: +fhbSelectButt("0-10")
+                                tr
+                                    td.text-center 13-15
+                                    td: +fhbSelectButt("6-13")
+                                    td: +fhbSelectButt("0-13")
+                                tr
+                                    td.text-center 15-17
+                                    td: +fhbSelectButt("6-15")
+                                    td: +fhbSelectButt("0-15")
+                    .col
+                        button.float-right.btn.btn-success#gotoSkBtn Next
+                        button.float-left.btn.btn-warning(onclick='window.history.back();') Back
+            when 3
+                .row
+                    .col-12
+                        label.control-label ข้อกำหนด:
+                        p 1. สำหรับนักเรียนที่เรียนสกิลจบแล้วสามารถกด Next ได้เลย
+                        p 2. การลงทะเบียนสกิลจะทำเฉพาะการเรียนที่สาขาสยามเท่านั้น
+                        p 3. กรณีที่เรียนสกิลที่สาย 3 กด Next ได้เลย
+                        //- p 4. สามารถลงเฉพาะเลขหรืออังกฤษได้ แต่ไม่สามารถลงเวลาทับกันได้
+                    .table-responsive
+                        table.table.table-bordered
+                            thead.thead-light
+                                tr
+                                    th(style="width:20%") &nbsp;
+                                    th.text-center(style="width:40%") SAT
+                                    th.text-center(style="width:40%") SUN
+                            tbody
+                                tr
+                                    td.text-center 8-10
+                                    td
+                                        +skSelectButt("6-8")
+                                    td
+                                        +skSelectButt("0-8")
+                                tr
+                                    td.text-center 10-12
+                                    td
+                                        +skSelectButt("6-10")
+                                    td
+                                        +skSelectButt("0-10")
+                                tr
+                                    td.text-center 13-15
+                                    td
+                                        +skSelectButt("6-13")
+                                    td
+                                        +skSelectButt("0-13")
+                                tr
+                                    td.text-center 15-17
+                                    td
+                                        +skSelectButt("6-15")
+                                    td
+                                        +skSelectButt("0-15")
+                    .col
+                        button.float-right.btn.btn-success#gotoSubmitBtn Next
+                        button.float-left.btn.btn-warning(onclick='window.history.back();') Back
+            when 4
+                .row
+                    .col-12    
+                        h4(style="color:red") ยืนยันการลงทะเบียนตามนี้
+                    .table-responsive
+                        table.table.table-bordered
+                            thead.thead-light
+                                tr
+                                    th &nbsp;
+                                    th.text-center TUE
+                                    th.text-center THU
+                            tbody
+                                tr
+                                    td.text-center(width='20%') 17-19
+                                    td(width='40%'): +finalSelectButt("2-17")
+                                    td(width='40%'): +finalSelectButt("4-17")
+                            thead.thead-light
+                                tr
+                                    th &nbsp;
+                                    th.text-center SAT
+                                    th.text-center SUN
+                            tbody
+                                tr
+                                    td.text-center(width='20%') 8-10
+                                    td(width='40%'): +finalSelectButt("6-8")
+                                    td(width='40%'): +finalSelectButt("0-8")
+                                tr
+                                    td.text-center 10-12
+                                    td: +finalSelectButt("6-10")
+                                    td: +finalSelectButt("0-10")
+                                tr
+                                    td.text-center 13-15
+                                    td: +finalSelectButt("6-13")
+                                    td: +finalSelectButt("0-13")
+                                tr
+                                    td.text-center 15-17
+                                    td: +finalSelectButt("6-15")
+                                    td: +finalSelectButt("0-15")
+                    .col-12
+                        h5.float-right= 'รวมเป็นเงิน ' + allCr.length*config.coursePrice + ' บาท'
+                    .col-12
+                        button.float-right.btn.btn-success#submitBtn ยืนยัน
+                        button.float-left.btn.btn-warning(onclick='window.history.back();') Back

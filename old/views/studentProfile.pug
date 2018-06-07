@@ -17,9 +17,42 @@ block head
             background-color: #D4EEF8!important;
             border-color: transparent!important;
         }
+        .imageBox{
+            position: relative;
+            height: 300px;
+            width: 300px;
+            border:1px solid #aaa;
+            background: #fff;
+            overflow: hidden;
+            background-repeat: no-repeat;
+            cursor:move;
+        }
+
+        .imageBox .thumbBox{
+            position: absolute;
+            top: 0%;
+            left: 12.5%;
+            width: 225px;
+            height: 300px;
+            margin-top: 0px;
+            margin-left: 0px;
+            border: 1px solid rgb(102, 102, 102);
+            box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.5);
+            background: none repeat scroll 0% 0% transparent;
+        }
+
+        .imageBox .spinner{
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            text-align: center;
+            line-height: 300px;
+            background: rgba(0,0,0,0.7);
+        }
 block script
-    script(src="js/custom-file-input.js")
-    script(src="js/constRegisQuarter.js")
+    script(src="js/cropbox-min.js")
     script(src="js/studentProfile.min.js")
 block body
     .container-fluid
@@ -28,12 +61,12 @@ block body
                 form
                     .form-group
                         label
-                            span.fa.fa-lg.fa-th-large &nbsp;
+                            span.fas.fa-fw.fa-lg.fa-th-large &nbsp;
                             |Quarter
                         select.form-control#quarterSelect
         .row
             .col-4
-                img.img-fluid.img-thumbnail#profileImg(src="images/noImage.svg")
+                img.img-fluid.img-thumbnail#profileImg(src="images/nopic.png")
             .col-8
                 #studentProfileContent
         .row
@@ -42,21 +75,21 @@ block body
                     table.table.table-bordered
                         thead.thead-dark
                             tr
-                                th &nbsp;
-                                th.text-center TUE
-                                th.text-center THU
+                                th(width='20%') &nbsp;
+                                th.text-center(width='40%') TUE
+                                th.text-center(width='40%') THU
                         tbody
                             tr
-                                td.text-center 17-19
+                                td.text-center 16-18
                                 +tdButt("btn2-17")
                                 +tdButt("btn4-17")
                 .table-responsive
                     table.table.table-bordered
                         thead.thead-dark
                             tr
-                                th &nbsp;
-                                th.text-center SAT
-                                th.text-center SUN
+                                th(width='20%') &nbsp;
+                                th.text-center(width='40%') SAT
+                                th.text-center(width='40%') SUN
                         tbody
                             tr
                                 td.text-center 8-10
@@ -99,16 +132,21 @@ block body
                         h4.modal-title Upload
                         button.close(type="button" data-dismiss="modal") &times;
                     .modal-body
-                        .box(align="center")
-                            input#file-img.inputfile.inputfile-1(
-                                type="file"
-                                name="file-img[]"
-                                style="opacity: 0;height: 0;"
-                            )
-                            label(for="file-img")
-                                svg(xmlns="http://www.w3.org/2000/svg" width="20" height="17" viewBox="0 0 20 17")
-                                    path(d="M10 0l-5.2 4.9h3.3v5.1h3.8v-5.1h3.3l-5.2-4.9zm9.3 11.5l-3.2-2.1h-2l3.4 2.6h-3.5c-.1 0-.2.1-.2.1l-.8 2.3h-6l-.8-2.2c-.1-.1-.1-.2-.2-.2h-3.6l3.4-2.6h-2l-3.2 2.1c-.4.3-.7 1-.6 1.5l.6 3.1c.1.5.7.9 1.2.9h16.3c.6 0 1.1-.4 1.3-.9l.6-3.1c.1-.5-.2-1.2-.7-1.5z")
-                                span เลือกรูป
+                        .row
+                            .col-12
+                                .custom-file
+                                    input#uploadPic.custom-file-input(type="file")
+                                    label.custom-file-label Choose picture
+                            .col-12
+                                .imageBox
+                                    .thumbBox
+                                    .spinner(style="display: none") Loading...
+                            .col-12
+                                //- button#btnCrop.btn.btn-primary.float-right Crop
+                                button#btnZoomOut.btn.btn-primary.float-right: span.fa.fa-search-minus
+                                button#btnZoomIn.btn.btn-primary.float-right: span.fa.fa-search-plus
+                            .col-12
+                                .cropped
                     .modal-footer
                         button.btn.btn-success#uploadPicButt(type="button") Upload
-                        button.btn.btn-danger(type="button" data-dismiss="modal") Cancel
+                        button#btnCrop.btn.btn-danger(type="button" data-dismiss="modal") Cancel

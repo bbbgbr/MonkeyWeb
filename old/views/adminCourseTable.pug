@@ -1,51 +1,59 @@
-extends oldHtmlTemplate
+extends htmlTemplate
 block head
     -const pageTitle = "Admin Course Table"
+block script
     script(src="js/admin.min.js")
-    script(src="js/constRegisQuarter.js")
     script(src="js/adminCrTable.min.js" type="text/javascript")
 block body
+    .container-fluid
+        .row
+            .col-12.col-md-3
+                .form-group
+                    label
+                        span.fas.fa-fw.fa-lg.fa-th-large &nbsp;
+                        |Quarter
+                    select.form-control#quarter
     .container
-        .col-sm-8.col-sm-offset-2
-            form#level
-                label เลือกระดับชั้น
-                label.checkbox-inline
-                    input(type="checkbox" value="1")
-                    | P1
-                label.checkbox-inline
-                    input(type="checkbox" value="2")
-                    | P2
-                label.checkbox-inline
-                    input(type="checkbox" value="3")
-                    | P3
-                label.checkbox-inline
-                    input(type="checkbox" value="4")
-                    | P4
-                label.checkbox-inline
-                    input(type="checkbox" value="5")
-                    | P5
-                label.checkbox-inline
-                    input(type="checkbox" value="6")
-                    | P6
-                label.checkbox-inline
-                    input(type="checkbox" value="7")
-                    | S1
-                label.checkbox-inline
-                    input(type="checkbox" value="8")
-                    | S2
-                label.checkbox-inline
-                    input(type="checkbox" value="9")
-                    | S3
-                label.checkbox-inline
-                    input(type="checkbox" value="10")
-                    | S4
-                label.checkbox-inline
-                    input(type="checkbox" value="11")
-                    | S5
-                label.checkbox-inline
-                    input(type="checkbox" value="12")
-                    | S6
-                button.btn.btn-default(onclick="sendLevel()" type="button") SUBMIT
+        .col#level
+            .form-check.form-check-inline
+                label.form-check-label เลือกระดับชั้น
+            .form-check.form-check-inline
+                input.form-check-input(type="checkbox" value="1")
+                label.form-check-label P1
+            .form-check.form-check-inline
+                input.form-check-input(type="checkbox" value="2")
+                label.form-check-label P2
+            .form-check.form-check-inline
+                input.form-check-input(type="checkbox" value="3")
+                label.form-check-label P3
+            .form-check.form-check-inline
+                input.form-check-input(type="checkbox" value="4")
+                label.form-check-label P4
+            .form-check.form-check-inline
+                input.form-check-input(type="checkbox" value="5")
+                label.form-check-label P5
+            .form-check.form-check-inline
+                input.form-check-input(type="checkbox" value="6")
+                label.form-check-label P6
+            .form-check.form-check-inline
+                input.form-check-input(type="checkbox" value="7")
+                label.form-check-label S1
+            .form-check.form-check-inline
+                input.form-check-input(type="checkbox" value="8")
+                label.form-check-label S2
+            .form-check.form-check-inline
+                input.form-check-input(type="checkbox" value="9")
+                label.form-check-label S3
+            .form-check.form-check-inline
+                input.form-check-input(type="checkbox" value="10")
+                label.form-check-label S4
+            .form-check.form-check-inline
+                input.form-check-input(type="checkbox" value="11")
+                label.form-check-label S5
+            .form-check.form-check-inline
+                input.form-check-input(type="checkbox" value="12")
+                label.form-check-label S6
+            button.btn.btn-outline-secondary(onclick="sendLevel()" type="button") SUBMIT
             br
     .container-fluid
         .table-responsive

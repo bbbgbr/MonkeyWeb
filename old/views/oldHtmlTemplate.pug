@@ -55,8 +55,8 @@ html(lang="en")
                                 -var nowTime = new Date()
                                 if nowTime.getTime() > startTime.getTime() && nowTime.getTime() < endTime.getTime()
                                     li: a(href="#" onclick="loadRegistrationPage()") ลงทะเบียน
-                                li: a(href="/absentAgreeForm") ลา CR&FHB
-                                li: a(href="/addAgreeForm") เพิ่ม FHB
+                                li: a(href="/absentAgreeForm") ลา
+                                li: a(href="/addAgreeForm") เพิ่ม
                                 //- li: a(href="/permanentAdtendance") ลา/เพิ่มตลอดไป
                             else
                                 if(webUser.position!="tutor")
@@ -74,6 +74,7 @@ html(lang="en")
                                         if(webUser.position!="tutor")
                                             li: a(href="/adminCourseMaterial") CR Tracking
                                 li: a(href="/adminStudentAttendanceModifier") ลา/เพิ่ม
+                                li: a(href="/tutorQrGenerator") QR Generator
                                 li.dropdown
                                     a.dropdown-toggle(data-toggle="dropdown" href="#") Tutor Check
                                         span.caret

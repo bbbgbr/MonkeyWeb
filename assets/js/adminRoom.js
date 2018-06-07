@@ -1,99 +1,153 @@
-var allQuarter = () => $.post('post/v1/listQuarter');
-
-var allRoom = (quarterID) => $.post('post/v1/allRoom', {
-    quarterID: quarterID
-});
-
-function getPageContent() {
-    getConfig().then(config => {
-        allQuarter().then(data => {
-            var selectQuarter = document.getElementById('quarterSelect');
-            selectQuarter.innerHTML = '';
-            for (let i = 0; i < data.length; i++) {
-                selectQuarter.innerHTML += '<option value="' + data[i].quarterID + '">' + data[i].name + '</option>';
-            }
-            selectQuarter.value = '' + config.defaultQuarter.quarter.year + ((('' + config.defaultQuarter.quarter.quarter).length === 1) ? '0' : '') + config.defaultQuarter.quarter.quarter;
-            getTableContent();
-        });
-    })
-}
-
-function getTableContent() {
-    var selectQuarter = document.getElementById('quarterSelect');
-    var tabs = document.getElementById('tabs');
-    var content = document.getElementById('content');
-    var dayList = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
-    var roomName = {
-        'room0': 'Hybird',
-        'room1': 'Room 1',
-        'room2': 'Room 2',
-        'room3': 'Room 3',
-        'room4': 'Room 4',
-        'room5': 'Room 5'
+genQuarterSelect();
+/**
+ * gen quarter select option
+ */
+async function genQuarterSelect() {
+    let cookies = getCookieDict();
+    let allQ = await listQuarter("private");
+    for (let i in allQ.quarter) {
+        $("#quarterSelect").append(
+            "<option value='" + allQ.quarter[i].year + "-" + allQ.quarter[i].quarter + "'>" + allQ.quarter[i].name + "</option>"
+        );
     }
-    tabs.innerHTML = '';
-    content.innerHTML = '';
-    allRoom(selectQuarter.options[selectQuarter.selectedIndex].value).then(data => {
-        var keys = [];
-        for (var key in data) {
-            keys.push(key);
-        }
-        keys.sort((arg1, arg2) => {
-            var hour1 = parseInt(arg1.substring(3, arg1.length));
-            var hour2 = parseInt(arg2.substring(3, arg2.length));
-            hour1 += dayList.indexOf(arg1.substring(0, 3)) * 100;
-            hour2 += dayList.indexOf(arg2.substring(0, 3)) * 100;
-            return hour1 - hour2;
-        });
-        for (let i = 0; i < keys.length; i++) {
-            tabs.innerHTML += '<li ' + ((i === 0) ? 'class="active"' : '') + '><a data-toggle="tab" href="#' + keys[i] + '">' + keys[i] + '</a></li>';
-            content.innerHTML += '<div id="' + keys[i] + '" class = "fade collapse container' + ((i === 0) ? ' active in' : '') + '">' +
-                '<div class = "table-responsive">' +
-                '<table class = "table table-hover table-bordered">' +
-                '<thead>' +
-                '<tr>' +
-                '<th class="col-sm-2">Room</th>' +
-                '<th class="col-sm-2">Course</th>' +
-                '<th class="col-sm-2">Tutorname</th>' +
-                '<th class="col-sm-1">No. of Student</th>' +
-                '<th class="col-sm-1">Max Student</th>' +
-                '</tr>' +
-                '</thead>' +
-                '<tbody id = "' + keys[i] + '">' +
-                '</tbody>' +
-                '</table>' +
-                '</div>' +
-                '</div>';
-            var rooms = []
-            for (var room in data[keys[i]]) {
-                rooms.push(room);
-            }
-            rooms.sort((arg1, arg2) => {
-                return parseInt(arg1.charAt(arg1.length - 1)) - parseInt(arg2.charAt(arg2.length - 1))
-            });
-            var table = document.getElementById(keys[i]);
-            var tbody = table.getElementsByTagName('tbody')[0];
-            for (let j = 0; j < rooms.length; j++) {
-                var row = tbody.insertRow(j);
-                let cell0 = row.insertCell(0);
-                let cell1 = row.insertCell(1);
-                let cell2 = row.insertCell(2);
-                let cell3 = row.insertCell(3);
-                let cell4 = row.insertCell(4);
-
-                if (rooms[j] !== 'room0' && data[keys[i]][rooms[j]].course !== undefined) {
-                    cell1.innerHTML = '<td>' + data[keys[i]][rooms[j]].course[0].courseName + '</td>';
-                    cell2.innerHTML = '<td>' + data[keys[i]][rooms[j]].course[0].tutorName + '</td>';
-                } else {
-                    cell1.innerHTML = '<td>Hybrid</td>';
-                    cell2.innerHTML = '<td>Hybrid</td>';
-                }
-                log(data[keys[i]][rooms[j]].course);
-                cell0.innerHTML = '<td>' + roomName[rooms[j]] + '</td>';
-                cell3.innerHTML = '<td>' + data[keys[i]][rooms[j]].studentCount + '</td>';
-                cell4.innerHTML = '<td>' + data[keys[i]][rooms[j]].maxStudent + '</td>';
-            }
-        }
-
-    });
+    if (cookies.monkeyWebSelectedQuarter !== undefined) {
+        $("#quarterSelect").val(cookies.monkeyWebSelectedQuarter);
+        genRoom();
+    } else {
+        let config = await getConfig();
+        $("#quarterSelect").val(config.defaultQuarter.quarter.year + "-" + config.defaultQuarter.quarter.quarter);
+        genRoom();
+    }
 }
+$("#quarterSelect").change(function () {
+    writeCookie("monkeyWebSelectedQuarter", $("#quarterSelect").val());
+    genRoom();
+})
+
+/**
+ * generate room data
+ */
+async function genRoom() {
+    /**
+     * sort object by key
+     * @param {Object} objIn 
+     */
+    const sortObject = (objIn) => {
+        let out = {};
+        Object.keys(objIn).sort().forEach(function (key) {
+            out[key] = objIn[key];
+        });
+        return out;
+    };
+    let roomData = await $.post("post/v1/allRoom", {
+        year: $("#quarterSelect").val().slice(0, 4), quarter: $("#quarterSelect").val().slice(5)
+    });
+    $(".tab-pane").empty();
+    for (let i in roomData) {
+        let allRoom = sortObject(roomData[i]);
+        let pointer = $("#" + i);
+        for (let j in allRoom) {
+            let room = allRoom[j];
+            let roomName = "";
+            switch (j) {
+                case 'room0':
+                    roomName = "HB";
+                    break;
+                case 'room1':
+                    roomName = "Room 1";
+                    break;
+                case 'room2':
+                    roomName = "Room 2";
+                    break;
+                case 'room3':
+                    roomName = "Room 3";
+                    break;
+                case 'room4':
+                    roomName = "Room 4";
+                    break;
+                case 'room5':
+                    roomName = "Glass";
+                    break;
+                default:
+                    break;
+            }
+            pointer.append(
+                "<div class='card'>" +
+                "<div class='card-header' id='head" + i + j + "'>" +
+                "<div class='row'>" +
+                "<div class='col-10'><h4 class='pt-2' id='name" + i + j + "'>" + roomName + "</h4></div>" +
+                "<div class='col-2'><h4 class='pt-2 float-right'>" + room.studentCount + "/" + room.maxStudent + "</h4></div>" +
+                "</div>" +
+                "</div>" +
+                "<div class='collapse card-body p-0' id='body" + i + j + "'><table class='table table-hover m-0'><tbody id='" + i + j + "'></tbody></table></div>" +
+                "</div>"
+            );
+            if (room.hybrid !== undefined) {
+                for (let k in room.hybrid) {
+                    if (room.hybrid[k].numMath !== undefined) {
+                        $("#" + i + j).append(
+                            "<tr class='table-warning hbRow' id='m" + room.hybrid[k].hybridID + "'>" +
+                            "<td class='text-left'>FHB:M</td>" +
+                            "<td class='text-right'>" + room.hybrid[k].numMath + "</td>" +
+                            "</tr>"
+                        );
+                    }
+                    if (room.hybrid[k].numPhysics !== undefined) {
+                        $("#" + i + j).append(
+                            "<tr class='table-primary hbRow' id='p" + room.hybrid[k].hybridID + "'>" +
+                            "<td class='text-left'>FHB:P</td>" +
+                            "<td class='text-right'>" + room.hybrid[k].numPhysics + "</td>" +
+                            "</tr>"
+                        );
+                    }
+                    if (room.hybrid[k].numChemistry !== undefined) {
+                        $("#" + i + j).append(
+                            "<tr class='table-info hbRow' id='c" + room.hybrid[k].hybridID + "'>" +
+                            "<td class='text-left'>FHB:C</td>" +
+                            "<td class='text-right'>" + room.hybrid[k].numChemistry + "</td>" +
+                            "</tr>"
+                        );
+                    }
+                    if (room.hybrid[k].numEnglish !== undefined) {
+                        $("#" + i + j).append(
+                            "<tr class='table-active hbRow' id='e" + room.hybrid[k].hybridID + "'>" +
+                            "<td class='text-left'>FHB:E</td>" +
+                            "<td class='text-right'>" + room.hybrid[k].numEnglish + "</td>" +
+                            "</tr>"
+                        );
+                    }
+                }
+            }
+            if (room.course !== undefined) {
+                for (let k in room.course) {
+                    if (room.course[k].tutor != "Hybrid") {
+                        let tutorName = " - " + room.course[k].tutor;
+                        let parentName = $("#name" + i + j).html();
+                        if (parentName.indexOf("-") <= 0) {
+                            $("#name" + i + j).html(parentName + tutorName);
+                        }
+                    }
+
+                    $("#" + i + j).append(
+                        "<tr class='crRow' id='" + room.course[k].courseID + "'>" +
+                        "<td class='text-left'>CR:" + room.course[k].courseName + "</td>" +
+                        "<td class='text-right'>" + room.course[k].num + "</td>" +
+                        "</tr>"
+                    );
+                }
+            }
+        }
+    }
+}
+$(".tab-pane").on("click", ".crRow", function (e) {
+    writeCookie("monkeyWebAdminAllcourseSelectedCourseID", this.id);
+    self.location = "/adminCoursedescription";
+});
+$(".tab-pane").on("click", ".hbRow", function (e) {
+    writeCookie("monkeySelectedHybrid", this.id);
+    self.location = "/adminHybridInfo";
+});
+$(".tab-pane").on("click", ".card-header", function (e) {
+    let target = "body" + this.id.slice(4);
+    $("#" + target).collapse('toggle');
+});

@@ -1,179 +1,87 @@
-var cr = []
-var crSuggest = []
-var cookie
-const feepersbj = 9000
-$(document).ready(function () {
-	cookie = getCookieDict()
-	$.post("/post/allCourse", { year: 2017, quarter: 12 }, function (data) {
-		if (data.err) {
-			alert("Cannot get course data from server")
-			throw data.err
-		}
-		addCourse(data.course, cookie.monkeyWebUser)
-		// for (let i = 0; i < data.course.length; i++) {
-		// 	if (data.course[i].description !== null) {
-		// 		$("#crDescription").append("<p>- " + data.course[i].courseName + " คือคอร์ส" + data.course[i].description + "</p>")
-		// 	}
-		// }
-	})
-	$('.btn').click(function () {
-		let allsel = $('.btn-success')
-		$('#total').html('จำนวนเงิน : ' + (feepersbj * allsel.length) + ' บาท')
-	})
-	$("#group").change(function () {
-		let allbtn = document.getElementsByClassName('btn');
-		let val = $("#group").val();
-		for (let i = 0; i < allbtn.length; i++) {
-			$(allbtn[i]).removeClass("btn-grow")
-		}
-		for (let i = 0; i < crSuggest.length; i++) {
-			if (crSuggest[i].level === val) {
-				// log(crSuggest[i].courseID)
-				for (let j = 0; j < crSuggest[i].courseID.length; j++) {
-					for (let k = 0; k < allbtn.length; k++) {
-						log(crSuggest[i].courseID[j] === allbtn[k].id)
-						if (crSuggest[i].courseID[j] === allbtn[k].id) {
-							$(allbtn[k]).addClass("btn-grow")
-						}
-					}
-				}
-			}
-		}
-	})
-})
-function addCourse(allcourse, id) {
-	$.post("/post/studentProfile", { studentID: parseInt(id) }, function (data) {
-		if (data.err) {
-			alert("Cannot get student profile from server")
-			throw data.err
-		}
-		$.post("post/listCourseSuggestion", { grade: data.grade, quarter: "summer" }, function (crSugg) {
-			if (crSugg.course.length === 0) {
-				$("#group-form").hide();
-			} else {
-				for (let i = 0; i < crSugg.course.length; i++) {
-					crSuggest.push(crSugg.course[i]);
-					$("#group").append("<option value='" + crSugg.course[i].level + "'>" + crSugg.course[i].level + "</option>");
-				}
-			}
-		})
-		$('#name').val(data.firstname + ' (' + data.nickname + ') ' + data.lastname)
-		$('#grade').val((data.grade > 6) ? 'ม. ' + (data.grade - 6) : 'ป. ' + data.grade)
-		for (let i in allcourse) {
-			if (checkgrade(allcourse[i], data.grade)) {
-				if (allcourse[i].description !== null) {
-					$("#crDescription").append("<p>- " + allcourse[i].courseName + " คือคอร์ส" + allcourse[i].description + "</p>")
-				}
-				cr.push(allcourse[i])
-				let coursetime = new Date(allcourse[i].day)
-				// log(coursetime.getHours())
-				let btn = document.getElementsByName(coursetime.getHours())
-				for (let j = 0; j < btn.length; j++) {
-					if (btn[j].innerHTML == '&nbsp;') {
-						btn[j].innerHTML = allcourse[i].courseName + ' (' + allcourse[i].tutorNicknameEn[0] + ')'
-						btn[j].id = allcourse[i].courseID
-						break
-					}
-				}
-			}
-		}
-		let allbtn = document.getElementsByClassName('btn')
-		for (let k = 0; k < allbtn.length; k++) {
-			if (allbtn[k].innerHTML == '&nbsp;') {
-				$(allbtn[k]).addClass('disabled')
-			}
-		}
-	})
+let regisQ;
+let grade;
+let level;
+getData();
+async function getData() {
+    let cookies = getCookieDict();
+    let stdID = cookies.monkeyWebUser;
+    let [config, stdProfile, allQ] = await Promise.all([getConfig(), studentProfile(stdID), listQuarter("public")]);
+    regisQ = config.defaultQuarter.registration;
+    for (let i in allQ.quarter) {
+        if (allQ.quarter[i].year === regisQ.year && allQ.quarter[i].quarter === regisQ.quarter) {
+            $("#regisHead").html("ลงทะเบียน " + allQ.quarter[i].name);
+        }
+    }
+    grade = stdProfile.level.slice(0, -1);
+    level = stdProfile.level.slice(-1);
+    genButton();
 }
-
-function checkgrade(course, grade) {
-	for (let i in course.grade) {
-		if (course.grade[i] == grade) {
-			return true
-		}
-	}
+async function genButton() {
+    let [allCr, crSuggest] = await Promise.all([allCourseV1(regisQ.year, regisQ.quarter), $.post("post/listCourseSuggestion", {
+        year: regisQ.year,
+        quarter: regisQ.quarter,
+        grade: grade
+    })]);
+    let gradeCR = allCr.filter(data => {
+        for (let i in data.grade) {
+            if (data.grade[i] === parseInt(grade)) return true;
+        }
+        return false;
+    });
+    let crIndex = [1, 1, 1];
+    $(".selector").html("-").addClass("disabled");
+    for (let i in gradeCR) {
+        let t = moment(gradeCR[i].day);
+        if (t.hour() === 8) {
+            $(".select8-" + crIndex[0]).html(gradeCR[i].courseName + " - " + gradeCR[i].tutorName).removeClass("disabled").attr("id", gradeCR[i].courseID);
+            crIndex[0] += 1;
+        } else if (t.hour() === 10) {
+            $(".select10-" + crIndex[1]).html(gradeCR[i].courseName + " - " + gradeCR[i].tutorName).removeClass("disabled").attr("id", gradeCR[i].courseID);
+            crIndex[1] += 1;
+        } else if (t.hour() === 13) {
+            $(".select13-" + crIndex[2]).html(gradeCR[i].courseName + " - " + gradeCR[i].tutorName).removeClass("disabled").attr("id", gradeCR[i].courseID);
+            crIndex[2] += 1;
+        }
+        if (gradeCR[i].description.length > 0 && gradeCR[i].description !== "-") {
+            $("#crDescription").append("<p>" + gradeCR[i].courseName + ": " + gradeCR[i].description + "</p>");
+        }
+    }
+    for (let i in crSuggest.course) {
+        if (crSuggest.course[i].level === level) {
+            for (let j in crSuggest.course[i].courseID) {
+                $("#" + crSuggest.course[i].courseID[j]).addClass("suggestCr");
+            }
+        }
+    }
 }
-
-function getCookieDict() {
-	"use strict";
-	//noinspection SpellCheckingInspection
-	let allcookies = document.cookie;
-	let obj = {};
-	//noinspection SpellCheckingInspection
-	let cookiearray = allcookies.split('; ');
-	for (let i = 0; i < cookiearray.length; i++) {
-		obj[cookiearray[i].split('=')[0]] = cookiearray[i].split('=')[1];
-	}
-	return obj;
+$(".selector").click(function () {
+    if (!$(this).hasClass("disabled")) {
+        $(this).siblings().removeClass("btn-primary").addClass("btn-light");
+        $(this).toggleClass("btn-primary btn-light");
+        updateTotal();
+    }
+});
+function updateTotal() {
+    let crCount = $(".btn-primary").length;
+    $("#total").html("รวมเป็นเงิน " + crCount * 4800 + " บาท");
 }
-
-function btntoggle(ele) {
-	if (!$(ele).hasClass('disabled')) {
-		if (ele.className.includes('btn-success')) {
-			$(ele).addClass('btn-default')
-			$(ele).removeClass('btn-success')
-		} else {
-			let allele = $('[name=' + ele.name + ']')
-			for (let i = 0; i < 2; i++) {
-				$(allele[i]).removeClass('btn-success')
-				$(allele[i]).addClass('btn-default')
-			}
-			$(ele).removeClass('btn-default')
-			$(ele).addClass('btn-success')
-		}
-	}
-	$(ele).blur()
-}
-
-function sendData() {
-	var allsel = $('.btn-success')
-	var allsend = []
-	if (allsel.length > 0) {
-		for (let i = 0; i < allsel.length; i++) {
-			for (let j in cr) {
-				let time = new Date(cr[j].day)
-				if (cr[j].courseName == allsel[i].innerHTML.split(' ')[0] && parseInt(time.getHours()) == parseInt(allsel[i].name)) {
-					allsend.push(cr[j].courseID)
-				}
-			}
-		}
-		console.log(allsend)
-		$.post('/post/addStudentCourse', { studentID: cookie.monkeyWebUser, courseID: allsend }, function (data) {
-			console.log('eiei')
-			console.log(data)
-			if (data.err) {
-				alert('การเชื่อมต่อมีปัญหา โปรดลองใหม่อีกครั้ง');
-				throw data.err;
-			}
-			$.post('/post/changeRegistrationState', { studentID: parseInt(cookie.monkeyWebUser), registrationState: 'untransferred', quarter: "summer" }, function (data2) {
-				if (data2.err) {
-					alert('เกิดข้อผิดพลาดบางอย่างขึ้น โปรดลองใหม่อีกครั้งหรือติดต่อAdmin')
-					throw data2.err;
-				}
-				self.location = 'summerAbsentForm'
-			})
-		})
-	}
-}
-
-function confirm() {
-	let allsel = $('.btn-success');
-	console.log(allsel.length)
-	if (allsel.length > 0) {
-		$('#noSel').hide()
-		$('#haveSel').show()
-		$('#confirm').show()
-		//fill in vvvvvv
-		let sbjtxt = '';
-		for (let i = 0; i < allsel.length; i++) {
-			sbjtxt += $(allsel[i]).html() + '<br>'
-		}
-		$(sbj).html(sbjtxt)
-		$('#fee').html(('' + (feepersbj * allsel.length)).slice(0, ('' + (feepersbj * allsel.length)).length - 3) + ",000 บาท")
-	} else {
-		$('#confirm').hide()
-		$('#noSel').show()
-		$('#haveSel').hide()
-
-	}
-}
+$("#submitBtn").click(function () {
+    if ($(".btn-primary").length <= 0) {
+        alert("กรุณาเลือกวิชา");
+    } else {
+        if (confirm("กรุณาตรวจสอบข้อมูลอย่างละเอียด หากกด 'ยืนยัน' แล้วจะไม่สามารถแก้ไขได้")) {
+            let crID = [];
+            for (let i = 0; i < $(".btn-primary").length; i++) {
+                crID.push($(".btn-primary")[i].id);
+            }
+            let cookies = getCookieDict();
+            let stdID = cookies.monkeyWebUser;
+            addStudentCourse(stdID, crID).then(cb => {
+                log(cb);
+                changeRegistrationState(stdID, "untransferred", { year: regisQ.year, quarter: regisQ.quarter }).then(() => {
+                    self.location = "/";
+                });
+            });
+        }
+    }
+});

@@ -1,31 +1,21 @@
 extends htmlTemplate
 block head
     -const pageTitle = "Registration Summer"
-    script(src="js/regSm.min.js")
     style.
-        .btn-grow{
-            box-shadow: 0 0 5px green;
+        .suggestCr{
+            box-shadow: 0 0 8px #49d0d0;
         }
+block script
+    script(src="js/regSm.min.js")
 block body
-    .container
-        form.form-horizontal
-            .form-group
-                label.control-label.col-sm-1 ชื่อ :
-                .col-sm-11: input#name.form-control(type="text" readonly)
-            .form-group
-                label.control-label.col-sm-1 ชั้น :
-                .col-sm-11: input#grade.form-control(type="text" readonly)
-            .form-group#group-form
-                label.control-label.col-sm-1 กลุ่ม :
-                .col-sm-11
-                    select#group.form-control(type="text")
-                        option(value="") กรุณาเลือกกลุ่ม
+    .jumbotron.bg-info.text-white
+        .container-fluid
+            h3#regisHead ลงทะเบียน CR61APR
+    .container-fluid
         .row
-            .col-xs-12.text-center.visible-xs
-                p(style="color:red") สำหรับคอร์ส CR60OCT จะเรียนทุกวัน
-                p(style="color:red") จันทร์ - ศุกร์ ตั้งแต่วันที่ 9 ถึง 27 ตุลาคม 60
-            .col-sm-12.text-center.hidden-xs
-                p(style="color:red") สำหรับคอร์ส CR60OCT จะเรียนทุกวัน จันทร์ - ศุกร์ ตั้งแต่วันที่ 9 ถึง 27 ตุลาคม 60
+            .col
+                p.text-center.text-danger สำหรับคอร์ส CR61APR จะเป็นคอร์สที่เรียนต่อเนื่องทุกวันจันทร์-ศุกร์ ตั้งแต่วันที่ 18 เม.ย. 61 - 27 เม.ย. 61
+                //- p.text-center.text-primary ช่องที่มีกรอบไฮไลต์สีน้ำเงินคือคอร์สที่แนะนำให้สมัครเรียน
         .table-responsive
             table.table.table-bordered
                 thead
@@ -34,47 +24,30 @@ block body
                         th.text-center วิชา
                 tbody
                     tr
-                        td.col-xs-6.text-center 8.00-10.00 น.
-                        td.col-xs-6
-                            button.btn.btn-default.col-xs-12.col-sm-6(name="8" onClick="btntoggle(this);this.blur();") &nbsp;
-                            button.btn.btn-default.col-xs-12.col-sm-6(name="8" onClick="btntoggle(this);this.blur();") &nbsp;
+                        td.text-center 8-10
+                        td
+                            button.btn.btn-light.col-12.col-md-6.selector.select8-1 -
+                            button.btn.btn-light.col-12.col-md-6.selector.select8-2 -
                     tr
-                        td.col-xs-6.text-center 10.00-12.00 น.
-                        td.col-xs-6
-                            button.btn.btn-default.col-xs-12.col-sm-6(name="10" onClick="btntoggle(this);this.blur();") &nbsp;
-                            button.btn.btn-default.col-xs-12.col-sm-6(name="10" onClick="btntoggle(this);this.blur();") &nbsp;
+                        td.text-center 10-12
+                        td
+                            button.btn.btn-light.col-12.col-md-6.selector.select10-1 -
+                            button.btn.btn-light.col-12.col-md-6.selector.select10-2 -
                     tr
-                        td.col-xs-6.text-center 13.00-15.00 น.
-                        td.col-xs-6
-                            button.btn.btn-default.col-xs-12.col-sm-6(name="13" onClick="btntoggle(this);this.blur();") &nbsp;
-                            button.btn.btn-default.col-xs-12.col-sm-6(name="13" onClick="btntoggle(this);this.blur();") &nbsp;
+                        td.text-center 13-15
+                        td
+                            button.btn.btn-light.col-12.col-md-6.selector.select13-1 -
+                            button.btn.btn-light.col-12.col-md-6.selector.select13-2 -
         .row
-            .col-xs-12#crDescription
-                p: strong คำอธิบายคอร์ส
+            .col#crDescription
+                p: strong Description:
         .row
-            .col-xs-12.text-right: h3#total(style="color:red;") จำนวนเงิน : 0 บาท
+            .col
+                p: strong - ทุกครั้งที่มีการปิดเทอมหรือหยุดนานๆ จะทำให้ นร.หลุดจากบรรยากาศการเรียนเสมอ คอร์สนี้จัดขึ้นเพื่อเตรียมให้ นร.กลับเข้าสู่บรรยากาศเรียนรู้ให้พร้อมเรียนในตอนเปิดเทอม
+                p: strong - นอกจากนี้ยังเป็นโอกาศที่ดีสำหรับ นร.ที่ไม่ได้ลง CR61MAR เพราะเนื้อหาที่เรียนใน 1 คอร์ส จะก้าวกระโดดมากทำให้ นร.อาจตกลงไปเรียนในระดับที่ต่ำกว่า
         .row
-            .col-xs-12.text-right
-                br
-                button.btn.btn-primary(type="button" onClick="this.blur();confirm();" data-toggle="modal" data-target="#confirmModal") ยืนยัน 
-                    span.glyphicon.glyphicon-chevron-right
-        //- Modal for confirm
-        #confirmModal.modal.fade(role="dialog")
-            .modal-dialog
-                .modal-content
-                    .modal-header
-                        button.close(type="button" data-dismiss="modal") &times;
-                        h3 ยืนยันการลงทะเบียน
-                    .modal-body
-                        #haveSel
-                            .row
-                                p.col-sm-3.col-xs-4: strong รายชื่อวิชา :
-                                p.col-sm-9.col-xs-8#sbj &nbsp;
-                            .row
-                                p.col-sm-3.col-xs-4: strong จำนวนเงิน :
-                                p.col-sm-9.col-xs-8#fee &nbsp;
-                        #noSel.text-center
-                            p(style="color:red"): strong กรุณาเลือกวิชาที่ต้องการลงทะเบียน
-                    .modal-footer
-                        button#confirm.btn.btn-primary(type="button" onClick="sendData()") ยืนยัน
-                        button.btn.btn-danger(type="button" data-dismiss="modal") ยกเลิก
+            .col
+                h5#total.float-right(style="color:red;") รวมเป็นเงิน 0 บาท
+        .row
+            .col
+                button#submitBtn.float-right.btn.btn-success ยืนยัน
