@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { body, oneOf, param } from 'express-validator/check';
 import { Observable } from 'rxjs';
 import { Attendance } from '../../../repositories/v1/Attendance';
+import { FileManager } from '../../../repositories/v1/FileManager';
 import { attendanceDocument, completionHandler, validateNumberArray, validateRequest, validateUserPosition } from '../../ApiHandler';
 
 export const router = Router();
@@ -30,7 +31,7 @@ router.post(
                 req.body.attendanceType,
                 req.body.reason,
                 req.body.sender,
-                req.file === undefined ? undefined : req.file.path,
+                req.file === undefined ? undefined : req.file,
             );
         } else {
             observable = Attendance.getInstance().add(
@@ -40,7 +41,7 @@ router.post(
                 req.body.attendanceType,
                 req.body.reason,
                 req.body.sender,
-                req.file === undefined ? undefined : req.file.path,
+                req.file === undefined ? undefined : req.file,
             );
         }
         observable.subscribe(
@@ -84,11 +85,16 @@ router.get(
     param('id').isInt(),
     validateRequest,
     (req, res) => {
+        let imagePath: string;
         Attendance.getInstance().getPath(
             req.params.id,
         ).subscribe(
-            (path) => res.status(200).sendFile(path),
-            (error) => res.status(500).send(error),
+            (image) => {
+                imagePath = image;
+                res.status(200).sendFile(image);
+            },
+            () => FileManager.sendNotFoundAttendanceImage(res),
+            () => FileManager.cleanUp(res, imagePath),
         );
     },
 );

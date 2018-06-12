@@ -1,8 +1,10 @@
 import { from, Observable } from 'rxjs';
 import { flatMap, map } from 'rxjs/operators';
 import * as Sequelize from 'sequelize';
+import * as uuid from 'uuid';
 import { Connection } from '../../models/Connection';
 import { AttendanceInstance, attendanceModel, IAttendanceModel } from '../../models/v1/attendance';
+import { FileManager } from './FileManager';
 
 export class Attendance {
 
@@ -28,15 +30,19 @@ export class Attendance {
         AttendanceType: string,
         Reason: string,
         Sender: string,
-        AttendanceDocument?: string,
+        AttendanceDocument?: Express.Multer.File,
     ): Observable<IAttendanceModel> {
-        let value = {
+        const value = {
             AttendanceDate, AttendanceType, ClassID, Reason, Sender, StudentID,
         } as IAttendanceModel;
         if (AttendanceDocument) {
-            value = { ...value, AttendanceDocument };
+            const fileName = uuid.v1();
+            return FileManager.getInstance().uploadAttendanceImage(fileName, AttendanceDocument).pipe(
+                flatMap((blob) => from(this.attendanceModel.create({ ...value, AttendanceDocument: fileName }))),
+            );
+        } else {
+            return from(this.attendanceModel.create(value));
         }
-        return from(this.attendanceModel.create(value));
     }
 
     public bulkAdd(
@@ -46,15 +52,28 @@ export class Attendance {
         AttendanceType: string,
         Reason: string,
         Sender: string,
-        AttendanceDocument?: string,
+        AttendanceDocument?: Express.Multer.File,
     ): Observable<IAttendanceModel[]> {
         const value: IAttendanceModel[] = [];
+        const fileName = uuid.v1();
         ClassID.forEach((element) => {
-            value.push({
-                AttendanceDate, AttendanceType, ClassID: element, Reason, Sender, StudentID,
-            });
+            if (AttendanceDocument) {
+                value.push({
+                    AttendanceDate, AttendanceDocument: fileName, AttendanceType, ClassID: element, Reason, Sender, StudentID,
+                });
+            } else {
+                value.push({
+                    AttendanceDate, AttendanceType, ClassID: element, Reason, Sender, StudentID,
+                });
+            }
         });
-        return from(this.attendanceModel.bulkCreate(value));
+        if (AttendanceDocument) {
+            return FileManager.getInstance().uploadAttendanceImage(fileName, AttendanceDocument).pipe(
+                flatMap((result) => from(this.attendanceModel.bulkCreate(value))),
+            );
+        } else {
+            return from(this.attendanceModel.bulkCreate(value));
+        }
     }
 
     public getPath(
@@ -67,6 +86,7 @@ export class Attendance {
             where: { ID },
         })).pipe(
             map((result) => result.AttendanceDocument),
+            flatMap((fileName) => FileManager.getInstance().downloadAttendanceImage(fileName)),
         );
     }
 

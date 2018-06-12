@@ -65,8 +65,10 @@
     "@types/passport-local": "^1.0.33",
     "@types/socket.io": "^1.4.34",
     "@types/tedious": "^1.8.32",
+    "@types/uuid": "^3.4.3",
     "@types/validator": "^9.4.1",
     "axios": "^0.18.0",
+    "azure-storage": "^2.9.0-preview",
     "bcrypt": "^2.0.1",
     "body-parser": "^1.18.3",
     "compose-middleware": "^5.0.0",
@@ -95,6 +97,7 @@
     "sequelize": "^4.37.8",
     "socket.io": "^2.1.1",
     "tedious": "^2.6.1",
+    "uuid": "^3.2.1",
     "webpack-node-externals": "^1.7.2"
   }
 }

@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { body } from 'express-validator/check';
 import Auth from '../../../Auth';
+import { validateRequest } from '../../ApiHandler';
 import { router as attendance } from './attendance';
 import { router as chat } from './chat';
 import { router as course } from './class';
@@ -31,6 +32,7 @@ router.post(
     '/login',
     body('userID').isInt(),
     body('password').isString(),
+    validateRequest,
     (req, res) => {
         Auth.login(req.body.userID, req.body.password).subscribe(
             (token) => res.status(200).send(token),
@@ -42,6 +44,7 @@ router.post(
 router.post(
     '/token',
     body('refreshToken').isString(),
+    validateRequest,
     (req, res) => {
         const newToken = Auth.refresh(req.body.refreshToken);
         if (newToken) {

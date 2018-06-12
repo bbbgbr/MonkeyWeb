@@ -63,6 +63,10 @@ export const commentImage = multer({
     }),
 }).single('commentImage');
 
+export const profileImage = multer({
+    storage: multer.diskStorage({}),
+}).single('profileImage');
+
 export function validateNumberArray(
     value: any,
 ): Promise<string> {
