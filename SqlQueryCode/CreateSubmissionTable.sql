@@ -1,0 +1,7 @@
+CREATE TABLE Submission(
+    ID INT PRIMARY KEY NOT NULL IDENTITY(1,1),
+    ClassID INT NOT NULL FOREIGN KEY REFERENCES Class(ID),
+    SubmissionState VARCHAR(16) NOT NULL,
+    SubmissionTimes INT NOT NULL,
+    FilePath VARCHAR(128)
+)

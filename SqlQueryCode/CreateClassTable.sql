@@ -1,0 +1,14 @@
+CREATE TABLE Class(
+    ID INT PRIMARY KEY NOT NULL IDENTITY(1,1),
+    ClassName NVARCHAR(64) NOT NULL,
+    QuarterID INT NOT NULL FOREIGN KEY REFERENCES Quarter(ID),
+    ClassDate DATETIME2 NOT NULL,
+    ClassSubject VARCHAR(8) NOT NULL,
+    Grade VARCHAR(64),
+    TutorID INT FOREIGN KEY REFERENCES Users(ID),
+    RoomID INT FOREIGN KEY REFERENCES Room(ID),
+    ClassDescription VARCHAR(MAX),
+    Suggestion VARCHAR(64),
+    ClassTimes TINYINT,
+    ClassType VARCHAR(16)
+)

@@ -1,0 +1,4 @@
+CREATE TABLE AttendanceDocument(
+    ID INT PRIMARY KEY NOT NULL IDENTITY(1,1),
+    DocumentPath VARCHAR(128) NOT NULL
+)

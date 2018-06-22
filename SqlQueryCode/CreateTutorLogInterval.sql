@@ -1,0 +1,9 @@
+CREATE TABLE TutorLogInterval
+(
+    ID INT PRIMARY KEY NOT NULL IDENTITY(1,1),
+    IntervalName NVARCHAR(30),
+    StartDate DATE NOT NULL,
+    EndDate DATE NOT NULL,
+    LastEdit DATETIME2 NOT NULL,
+    EditedBy INT NOT NULL FOREIGN KEY REFERENCES Users(ID)
+)
